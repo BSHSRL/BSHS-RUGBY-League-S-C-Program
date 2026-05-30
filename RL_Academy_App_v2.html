@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Bundaberg SHS — RL Academy</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--navy:#0D2137;--navy2:#122840;--gold:#C9A227;--gold2:#E8B930;--blue:#1B4F8A;--steel:#2E6DA4;--ltblue:#D6E4F2;--pale:#EBF3FB;--white:#FFFFFF;--off:#F8F9FA;--gray:#8896A7;--border:rgba(255,255,255,0.08);--green:#1A7A42;--ltgreen:#D4EDDA;--orange:#C05020;--ltorange:#FAEAEA;--purple:#5A2A7A;--ltpurple:#EDE0F3;--teal:#1A7A7A;--card:rgba(255,255,255,0.04);--radius:12px;--radius-sm:8px;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{font-size:16px;scroll-behavior:smooth;}
+body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--white);min-height:100vh;overflow-x:hidden;}
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:var(--navy);}::-webkit-scrollbar-thumb{background:var(--gold);border-radius:4px;}
+#app{display:flex;flex-direction:column;min-height:100vh;}
+.screen{display:none;flex-direction:column;min-height:100vh;}.screen.active{display:flex;}
+
+/* LOGIN */
+#login{justify-content:center;align-items:center;background:linear-gradient(160deg,#0a1a2e 0%,#0D2137 40%,#0f2d50 100%);position:relative;overflow:hidden;}
+.login-bg{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 60% 40% at 50% -10%,rgba(201,162,39,0.12) 0%,transparent 70%),radial-gradient(ellipse 40% 30% at 90% 80%,rgba(27,79,138,0.2) 0%,transparent 60%);}
+.login-grid{position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px);background-size:40px 40px;}
+.login-box{position:relative;z-index:1;width:100%;max-width:420px;padding:0 24px;}
+.login-logo{text-align:center;margin-bottom:32px;}
+.login-logo-badge{display:inline-block;background:var(--gold);color:var(--navy);font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:11px;letter-spacing:3px;padding:6px 16px;border-radius:3px;margin-bottom:14px;}
+.login-title{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:48px;line-height:0.95;color:var(--white);margin-bottom:6px;}
+.login-title span{color:var(--gold);}
+.login-sub{font-size:14px;color:var(--gray);}
+.login-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:var(--radius);padding:26px;backdrop-filter:blur(10px);}
+.login-card h3{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;letter-spacing:1px;margin-bottom:18px;color:var(--gold);}
+.form-group{margin-bottom:14px;}
+.form-group label{display:block;font-size:11px;font-weight:600;letter-spacing:1.5px;color:var(--gray);margin-bottom:5px;text-transform:uppercase;}
+.form-group input,.form-group select{width:100%;padding:11px 13px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:var(--radius-sm);color:var(--white);font-family:'Barlow',sans-serif;font-size:15px;transition:border-color 0.2s;-webkit-appearance:none;}
+.form-group input:focus,.form-group select:focus{outline:none;border-color:var(--gold);background:rgba(255,255,255,0.08);}
+.form-group select option{background:var(--navy);color:var(--white);}
+.btn{display:block;width:100%;padding:13px;background:var(--gold);color:var(--navy);font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:15px;letter-spacing:2px;border:none;border-radius:var(--radius-sm);cursor:pointer;transition:all 0.2s;text-transform:uppercase;}
+.btn:hover{background:var(--gold2);transform:translateY(-1px);box-shadow:0 4px 20px rgba(201,162,39,0.3);}
+.btn:active{transform:translateY(0);}
+.btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+.btn-outline{background:transparent;border:2px solid var(--gold);color:var(--gold);}
+.btn-outline:hover{background:rgba(201,162,39,0.1);transform:none;box-shadow:none;}
+.btn-sm{display:inline-block;width:auto;padding:8px 16px;font-size:12px;letter-spacing:1.5px;}
+.btn-ghost{background:rgba(255,255,255,0.06);color:var(--white);border:1px solid rgba(255,255,255,0.1);}
+.btn-ghost:hover{background:rgba(255,255,255,0.1);}
+.btn-green{background:var(--green);color:var(--white);}
+.btn-green:hover{background:#1d8a4a;box-shadow:0 4px 20px rgba(26,122,66,0.3);}
+.btn-red{background:var(--orange);color:var(--white);}
+.btn-blue{background:var(--blue);color:var(--white);}
+.login-switch{text-align:center;margin-top:14px;font-size:13px;color:var(--gray);}
+.login-switch a{color:var(--gold);cursor:pointer;font-weight:600;}
+
+/* MAIN LAYOUT */
+#main{flex-direction:row;}
+.sidebar{width:220px;flex-shrink:0;background:rgba(0,0,0,0.25);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;}
+.sidebar-logo{padding:18px 18px 14px;border-bottom:1px solid var(--border);}
+.sidebar-logo .badge{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:10px;letter-spacing:2px;color:var(--gold);background:rgba(201,162,39,0.15);padding:3px 8px;border-radius:3px;display:inline-block;margin-bottom:5px;}
+.sidebar-logo h2{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:18px;line-height:1.1;}
+.sidebar-logo h2 span{color:var(--gold);}
+.sidebar-nav{flex:1;padding:10px 0;overflow-y:auto;}
+.nav-section{font-size:9px;font-weight:700;letter-spacing:2px;color:rgba(255,255,255,0.3);text-transform:uppercase;padding:10px 18px 3px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 18px;cursor:pointer;font-size:13px;font-weight:500;color:rgba(255,255,255,0.6);transition:all 0.15s;border-left:3px solid transparent;}
+.nav-item:hover{background:rgba(255,255,255,0.04);color:var(--white);}
+.nav-item.active{background:rgba(201,162,39,0.08);color:var(--gold);border-left-color:var(--gold);}
+.nav-item .icon{font-size:15px;flex-shrink:0;}
+.sidebar-user{padding:13px 18px;border-top:1px solid var(--border);}
+.sidebar-user .name{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;}
+.sidebar-user .pos{font-size:11px;color:var(--gray);}
+.sidebar-user .logout{font-size:11px;color:var(--gray);cursor:pointer;margin-top:3px;}
+.sidebar-user .logout:hover{color:var(--orange);}
+.main-content{flex:1;overflow-y:auto;min-height:100vh;}
+.mobile-header{display:none;background:var(--navy2);border-bottom:1px solid var(--border);padding:11px 16px;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.mobile-header h2{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:19px;}
+.mobile-header h2 span{color:var(--gold);}
+.hamburger{font-size:21px;cursor:pointer;padding:4px;}
+.mobile-menu{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);}
+.mobile-menu.open{display:block;}
+.mobile-menu-panel{position:absolute;top:0;left:0;bottom:0;width:260px;background:#0a1e32;padding:20px 0;animation:slideIn 0.25s ease;}
+@keyframes slideIn{from{transform:translateX(-100%);}to{transform:translateX(0);}}
+.mobile-close{position:absolute;top:16px;right:16px;font-size:21px;cursor:pointer;}
+
+/* PAGE */
+.page{padding:26px;max-width:960px;}
+.page-header{margin-bottom:24px;}
+.page-header .eyebrow{font-size:11px;font-weight:700;letter-spacing:2.5px;color:var(--gold);text-transform:uppercase;margin-bottom:5px;}
+.page-header h1{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:34px;line-height:1;}
+.page-header p{font-size:14px;color:var(--gray);margin-top:5px;}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px;transition:background 0.15s;}
+.card:hover{background:rgba(255,255,255,0.06);}
+.card-title{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:17px;margin-bottom:3px;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.stat-tile{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;border-top:3px solid var(--gold);}
+.stat-tile .num{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:34px;line-height:1;color:var(--gold);}
+.stat-tile .label{font-size:11px;color:var(--gray);margin-top:2px;}
+.progress-bar{height:6px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;margin-top:8px;}
+.progress-bar .fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--gold),var(--gold2));transition:width 0.6s ease;}
+
+/* WORKOUT */
+.week-tabs{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:18px;}
+.week-tab{padding:6px 12px;border-radius:20px;cursor:pointer;font-size:11px;font-weight:600;background:rgba(255,255,255,0.06);color:var(--gray);border:1px solid rgba(255,255,255,0.08);transition:all 0.15s;}
+.week-tab:hover{background:rgba(255,255,255,0.1);color:var(--white);}
+.week-tab.active{background:var(--gold);color:var(--navy);border-color:var(--gold);}
+.week-tab.completed{background:rgba(26,122,66,0.2);color:var(--green);border-color:var(--green);}
+.week-tab.completed.active{background:var(--green);color:var(--white);}
+.phase-badge{display:inline-block;padding:3px 9px;border-radius:3px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;}
+.phase-gpp{background:rgba(26,122,66,0.2);color:#4ade80;}
+.phase-acc{background:rgba(27,79,138,0.3);color:#60a5fa;}
+.phase-trans{background:rgba(90,42,122,0.3);color:#c084fc;}
+.phase-real{background:rgba(192,80,32,0.3);color:#fb923c;}
+.session-tabs{display:flex;gap:0;margin-bottom:18px;background:rgba(255,255,255,0.04);border-radius:var(--radius-sm);padding:3px;border:1px solid var(--border);}
+.session-tab{flex:1;padding:8px;text-align:center;cursor:pointer;border-radius:6px;font-size:11px;font-weight:600;letter-spacing:0.5px;color:var(--gray);transition:all 0.15s;}
+.session-tab.active{background:var(--navy2);color:var(--white);box-shadow:0 1px 4px rgba(0,0,0,0.3);}
+.exercise-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:var(--radius);margin-bottom:10px;overflow:hidden;}
+.exercise-header{display:flex;align-items:center;justify-content:space-between;padding:13px 15px;cursor:pointer;gap:10px;}
+.exercise-header:hover{background:rgba(255,255,255,0.03);}
+.ex-name{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;flex:1;}
+.ex-target{font-size:11px;color:var(--gold);font-weight:600;background:rgba(201,162,39,0.1);padding:3px 8px;border-radius:3px;white-space:nowrap;}
+.ex-chevron{font-size:13px;color:var(--gray);transition:transform 0.2s;}
+.ex-chevron.open{transform:rotate(180deg);}
+.exercise-body{padding:0 15px 14px;display:none;}
+.exercise-body.open{display:block;}
+.ex-cue{font-size:12px;color:var(--gray);margin-bottom:10px;padding:8px 11px;background:rgba(255,255,255,0.03);border-left:3px solid var(--gold);border-radius:0 4px 4px 0;}
+.set-grid{display:grid;grid-template-columns:46px 1fr 1fr 76px;gap:5px;margin-bottom:5px;}
+.set-grid .hcell{font-size:9px;font-weight:700;letter-spacing:1.5px;color:rgba(255,255,255,0.3);text-transform:uppercase;text-align:center;}
+.set-grid input{padding:7px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:var(--white);font-family:'Barlow',sans-serif;font-size:13px;text-align:center;width:100%;transition:border-color 0.15s;}
+.set-grid input:focus{outline:none;border-color:var(--gold);background:rgba(255,255,255,0.08);}
+.set-label{display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--gray);}
+.rpe-sel{padding:7px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:var(--white);font-family:'Barlow',sans-serif;font-size:12px;width:100%;-webkit-appearance:none;}
+.save-bar{position:sticky;bottom:0;padding:14px 0;background:linear-gradient(to top,var(--navy) 60%,transparent);}
+.sess-notes textarea{width:100%;padding:9px 11px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:var(--radius-sm);color:var(--white);font-family:'Barlow',sans-serif;font-size:13px;resize:vertical;min-height:65px;}
+.sess-notes textarea:focus{outline:none;border-color:var(--gold);}
+.sess-notes label{display:block;font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--gray);text-transform:uppercase;margin-bottom:5px;}
+
+/* WELLBEING */
+.wb-domain{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.domain-name{width:85px;font-size:12px;font-weight:600;color:var(--gray);flex-shrink:0;}
+.rating-dots{display:flex;gap:5px;flex:1;}
+.rating-dot{flex:1;height:34px;border-radius:6px;cursor:pointer;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--gray);transition:all 0.15s;}
+.rating-dot:hover{background:rgba(255,255,255,0.12);}
+.rating-dot.s1{background:#7f1d1d;border-color:#ef4444;color:#fff;}
+.rating-dot.s2{background:#78350f;border-color:#f97316;color:#fff;}
+.rating-dot.s3{background:#1e3a5f;border-color:#3b82f6;color:#fff;}
+.rating-dot.s4{background:#14532d;border-color:#22c55e;color:#fff;}
+.rating-dot.s5{background:#14532d;border-color:#4ade80;color:#4ade80;}
+.flag-card{background:rgba(192,80,32,0.15);border:1px solid rgba(192,80,32,0.3);border-radius:var(--radius);padding:12px 15px;margin-top:14px;}
+.flag-card .ft{font-size:13px;font-weight:700;color:var(--orange);margin-bottom:3px;}
+.flag-card p{font-size:12px;color:rgba(255,255,255,0.7);}
+
+/* TESTING */
+.test-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+.test-name-col{flex:1;}
+.test-name{font-size:13px;}
+.test-target{font-size:11px;color:var(--gray);}
+.test-input{width:84px;padding:7px 9px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:var(--white);font-family:'Barlow',sans-serif;font-size:13px;text-align:center;}
+.test-input:focus{outline:none;border-color:var(--gold);}
+.test-unit{font-size:11px;color:var(--gray);}
+.badge{font-size:10px;font-weight:700;padding:3px 7px;border-radius:3px;}
+.bg{background:rgba(26,122,66,0.2);color:#4ade80;}
+.bb{background:rgba(192,80,32,0.2);color:#fb923c;}
+.bk{background:rgba(27,79,138,0.2);color:#60a5fa;}
+
+/* COACH DASHBOARD */
+.coach-badge{background:rgba(201,162,39,0.2);border:1px solid rgba(201,162,39,0.3);border-radius:var(--radius-sm);padding:6px 12px;font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--gold);display:inline-block;margin-bottom:16px;}
+.student-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;cursor:pointer;transition:all 0.15s;}
+.student-card:hover{background:rgba(255,255,255,0.07);border-color:rgba(255,255,255,0.15);}
+.student-card .sname{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:18px;margin-bottom:2px;}
+.student-card .smeta{font-size:12px;color:var(--gray);margin-bottom:10px;}
+.student-card .sstat{display:flex;gap:10px;}
+.student-card .sstat-item{text-align:center;}
+.student-card .sstat-num{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:22px;color:var(--gold);}
+.student-card .sstat-label{font-size:10px;color:var(--gray);}
+.flag-dot{width:8px;height:8px;border-radius:50%;background:var(--orange);display:inline-block;margin-left:6px;animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+.detail-modal{display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);overflow-y:auto;}
+.detail-modal.open{display:block;}
+.detail-panel{background:#0e2236;border:1px solid rgba(255,255,255,0.1);border-radius:var(--radius);max-width:720px;margin:40px auto;padding:28px;}
+.detail-close{float:right;font-size:20px;cursor:pointer;color:var(--gray);}
+.detail-close:hover{color:var(--white);}
+.log-entry{padding:10px 12px;background:rgba(255,255,255,0.03);border-radius:var(--radius-sm);margin-bottom:6px;border-left:3px solid var(--green);}
+.log-entry .le-title{font-size:13px;font-weight:600;}
+.log-entry .le-meta{font-size:11px;color:var(--gray);margin-top:2px;}
+.log-entry .le-rpe{float:right;font-size:12px;font-weight:700;color:var(--gold);}
+
+/* MISC */
+.section-title{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.45);margin:22px 0 10px;display:flex;align-items:center;gap:10px;}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border);}
+.divider{height:1px;background:var(--border);margin:18px 0;}
+.info-bar{background:rgba(27,79,138,0.15);border:1px solid rgba(27,79,138,0.2);border-left:3px solid var(--steel);border-radius:var(--radius-sm);padding:9px 13px;font-size:12px;color:rgba(255,255,255,0.7);margin-bottom:14px;}
+.toast{position:fixed;bottom:22px;right:22px;z-index:999;background:var(--navy2);border:1px solid var(--green);color:var(--white);padding:11px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;transform:translateY(80px);opacity:0;transition:all 0.3s ease;}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.error{border-color:var(--orange);}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.2);border-top-color:var(--gold);border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:6px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.empty-state{text-align:center;padding:44px 22px;color:var(--gray);}
+.empty-state .ei{font-size:38px;margin-bottom:10px;}
+.session-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+.session-row:last-child{border-bottom:none;}
+.session-dot{width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0;}
+.session-info{flex:1;}
+.session-info .sn{font-size:13px;font-weight:500;}
+.session-info .sd{font-size:11px;color:var(--gray);}
+.srpe{font-size:11px;font-weight:700;color:var(--gold);background:rgba(201,162,39,0.1);padding:2px 7px;border-radius:3px;}
+
+/* MOTTO */
+.motto-card{background:linear-gradient(135deg,rgba(90,42,122,0.2) 0%,rgba(13,33,55,0.4) 100%);border:1px solid rgba(90,42,122,0.2);border-radius:var(--radius);padding:18px;}
+.motto-lbl{font-size:10px;font-weight:700;letter-spacing:2px;color:#c084fc;text-transform:uppercase;margin-bottom:6px;}
+.motto-txt{font-size:16px;font-weight:500;color:var(--white);line-height:1.5;margin-bottom:5px;}
+.motto-author{font-size:11px;color:var(--gray);}
+.motto-theme{font-size:10px;font-weight:700;letter-spacing:2px;color:#c084fc;text-transform:uppercase;margin-top:6px;}
+
+@media(max-width:768px){.sidebar{display:none;}.mobile-header{display:flex;}.page{padding:14px;}.grid-2{grid-template-columns:1fr;}.grid-3{grid-template-columns:1fr 1fr;}.grid-4{grid-template-columns:1fr 1fr;}.set-grid{grid-template-columns:42px 1fr 1fr 68px;gap:4px;}}
+@media(max-width:480px){.grid-3{grid-template-columns:1fr;}.grid-4{grid-template-columns:1fr 1fr;}}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- LOGIN -->
+<div id="login" class="screen active">
+  <div class="login-bg"></div><div class="login-grid"></div>
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="login-logo-badge">BUNDABERG SHS</div>
+      <div class="login-title">RL<br><span>ACADEMY</span></div>
+      <div class="login-sub">Student Training Portal</div>
+    </div>
+
+    <!-- Sign In -->
+    <div class="login-card" id="card-login">
+      <h3>SIGN IN</h3>
+      <div class="form-group"><label>Your Name</label><input id="li-name" type="text" placeholder="First Last" autocomplete="name"></div>
+      <div class="form-group"><label>PIN (4 digits)</label><input id="li-pin" type="password" inputmode="numeric" maxlength="4" placeholder="••••"></div>
+      <button class="btn" id="btn-login" onclick="doLogin()">SIGN IN</button>
+      <div class="login-switch">New here? <a onclick="showCard('card-reg')">Create account</a></div>
+    </div>
+
+    <!-- Register -->
+    <div class="login-card" id="card-reg" style="display:none">
+      <h3>CREATE ACCOUNT</h3>
+      <div class="form-group"><label>Full Name</label><input id="rg-name" type="text" placeholder="First Last"></div>
+      <div class="form-group"><label>Year Level</label>
+        <select id="rg-year"><option>Year 8</option><option>Year 9</option><option>Year 10</option><option>Year 11</option><option>Year 12</option></select>
+      </div>
+      <div class="form-group"><label>Position</label>
+        <select id="rg-pos"><option>Fullback</option><option>Wing</option><option>Centre</option><option>Five-Eight</option><option>Halfback</option><option>Hooker</option><option>Prop</option><option>Second Row</option><option>Lock</option><option>Utility</option></select>
+      </div>
+      <div class="form-group"><label>Create PIN (4 digits)</label><input id="rg-pin" type="password" inputmode="numeric" maxlength="4" placeholder="••••"></div>
+      <button class="btn" id="btn-reg" onclick="doRegister()">CREATE ACCOUNT</button>
+      <div class="login-switch">Already have an account? <a onclick="showCard('card-login')">Sign in</a></div>
+    </div>
+
+    <!-- Coach login -->
+    <div class="login-card" id="card-coach" style="display:none">
+      <h3>COACH SIGN IN</h3>
+      <div class="form-group"><label>Coach Name</label><input id="co-name" type="text" placeholder="Coach Name"></div>
+      <div class="form-group"><label>PIN (4 digits)</label><input id="co-pin" type="password" inputmode="numeric" maxlength="4" placeholder="••••"></div>
+      <button class="btn btn-blue" id="btn-coach" onclick="doCoachLogin()">COACH SIGN IN</button>
+      <div class="login-switch"><a onclick="showCard('card-login')">← Back to student login</a></div>
+    </div>
+
+    <div style="text-align:center;margin-top:12px">
+      <a onclick="showCard('card-coach')" style="font-size:12px;color:var(--gray);cursor:pointer;">Coach login →</a>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="main" class="screen">
+  <div class="mobile-header">
+    <h2>RL <span>ACADEMY</span></h2>
+    <div class="hamburger" onclick="toggleMenu()">☰</div>
+  </div>
+  <div class="mobile-menu" id="mob-menu" onclick="closeMenuOutside(event)">
+    <div class="mobile-menu-panel">
+      <div class="mobile-close" onclick="toggleMenu()">✕</div>
+      <div id="mob-nav"></div>
+    </div>
+  </div>
+  <nav class="sidebar">
+    <div class="sidebar-logo"><div class="badge">BSHS</div><h2>RL <span>ACADEMY</span></h2></div>
+    <div class="sidebar-nav" id="side-nav"></div>
+    <div class="sidebar-user" id="side-user"></div>
+  </nav>
+  <div class="main-content" id="content"></div>
+</div>
+</div>
+<div class="toast" id="toast"></div>
+<div class="detail-modal" id="detail-modal">
+  <div class="detail-panel" id="detail-panel"></div>
+</div>
+
+<script>
+// ── Supabase ──────────────────────────────────────────────────────────────────
+const SB_URL = 'https://lfccauapnwmwfinmdwgg.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxmY2NhdWFwbndtd2Zpbm1kd2dnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwODMzMTksImV4cCI6MjA5NTY1OTMxOX0.bH3SJ-NkmSNFyYCOW1tKdQVY0UdnIESe26eeM1S4hMc';
+const sb = supabase.createClient(SB_URL, SB_KEY);
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let CU = null; // current user profile object
+let CP = 'dashboard';
+let CW = 1; // current week
+let CS = 'mon'; // current session
+let TL = {}; // temp log for current session
+let WBT = {}; // temp wellbeing
+
+// ── Workout Data ──────────────────────────────────────────────────────────────
+const WEEKS=[
+  {wk:1,phase:"GPP",label:"GPP — Phase 1",theme:"Build Your Base — Technique First",motto:"We suffer more in imagination than in reality.",thinker:"Seneca",focus:"DISCIPLINE",
+    mon:{title:"Monday S&C — Strength",focus:"Perfect technique. Do NOT go heavy yet.",intensity:"65-70%",exercises:[
+      {name:"Back Squat",target:"4 × 8",cue:"Knees track toes. Full depth. Tempo 3-1-X.",sets:4},
+      {name:"Romanian Deadlift",target:"3 × 10",cue:"Hip hinge. Feel the hamstring load.",sets:3},
+      {name:"Nordic Hamstring Curl",target:"3 × 5",cue:"Lower as slowly as possible — 3–5 sec eccentric.",sets:3},
+      {name:"Step-Up (weighted)",target:"3 × 10/side",cue:"Drive through the heel. Equal weight each side.",sets:3},
+      {name:"Glute Bridge (banded)",target:"3 × 15",cue:"Posterior chain activation. Squeeze at the top.",sets:3},
+      {name:"McGill Bird Dog",target:"2 × 10/side",cue:"Neutral spine. Slow and controlled.",sets:2},
+      {name:"Pallof Press",target:"2 × 12/side",cue:"Anti-rotation. Brace — don't twist.",sets:2},
+    ]},
+    wed:{title:"Wednesday S&C — Power & Speed",focus:"Speed is a skill. Quality over quantity.",intensity:"60-65%",exercises:[
+      {name:"Sprint Mechanics (A-March/Skip)",target:"3 × 15m each",cue:"Sprint mechanics warm-up. Tall posture.",sets:3},
+      {name:"Acceleration Runs",target:"3 × 15m",cue:"Forward lean. Drive phase. Don't stand up early.",sets:3},
+      {name:"Hang Power Clean",target:"4 × 4",cue:"Triple extension — ankle, knee, hip. Fast elbows.",sets:4},
+      {name:"Box Jump",target:"3 × 4",cue:"Land softly. Full reset between reps.",sets:3},
+      {name:"Broad Jump",target:"3 × 3",cue:"Max effort. Measure and record your distance.",sets:3},
+      {name:"40m Runs @ 80%",target:"4 × 40m",cue:"Not flat out — 80%. Stay within 5% of your first rep.",sets:4},
+    ]},
+    fri:{title:"Friday S&C — Athletic Development",focus:"Upper body + neck work is non-negotiable.",intensity:"70-75%",exercises:[
+      {name:"Bench Press",target:"4 × 8",cue:"Retract scapulae before descent. Tempo 3-1-1.",sets:4},
+      {name:"DB Incline Press",target:"3 × 10",cue:"Upper chest. Control the descent.",sets:3},
+      {name:"Bent-Over Row",target:"4 × 8",cue:"Neutral spine. Retract at the top.",sets:4},
+      {name:"Weighted Pull-Up / Lat Pulldown",target:"3 × 8",cue:"Full range. No kipping.",sets:3},
+      {name:"Plate Shrug",target:"3 × 15",cue:"Neck & trap work — non-negotiable for contact sport.",sets:3},
+      {name:"Face Pull (rope)",target:"3 × 20",cue:"Posterior deltoid. External rotators. Slow.",sets:3},
+      {name:"Band Neck Isometrics",target:"3 × 10s × 4 directions",cue:"Front, back, each side. Protects your brain.",sets:3},
+      {name:"Copenhagen Plank",target:"3 × 20s/side",cue:"Groin resilience. Critical for RL.",sets:3},
+    ]}},
+  {wk:2,phase:"GPP",label:"GPP — Phase 1",theme:"Consistency — Same movements, add confidence",motto:"Well-being is realised by small steps, but it is no small thing.",thinker:"Zeno of Citium",focus:"CONSISTENCY",
+    mon:{title:"Monday S&C — Strength",focus:"Add 2.5kg if last week felt controlled.",intensity:"67-72%",exercises:[
+      {name:"Back Squat",target:"4 × 8",cue:"Add 2.5kg from Week 1 if form was solid.",sets:4},
+      {name:"Romanian Deadlift",target:"3 × 10",cue:"Same weight or slightly heavier.",sets:3},
+      {name:"Nordic Hamstring Curl",target:"3 × 5",cue:"Slow eccentric. Build the resilience.",sets:3},
+      {name:"Lateral Band Walk",target:"3 × 15/side",cue:"Hip abductor strength for lateral defence.",sets:3},
+      {name:"Single-Leg RDL",target:"3 × 8/side",cue:"Unilateral balance. Addresses side-to-side deficit.",sets:3},
+      {name:"McGill Bird Dog",target:"2 × 10/side",cue:"Spine-sparing core work.",sets:2},
+      {name:"Pallof Press",target:"2 × 12/side",cue:"Increase resistance slightly from Week 1.",sets:2},
+    ]},
+    wed:{title:"Wednesday S&C — Power & Speed",focus:"Build on Week 1 speed work.",intensity:"62-67%",exercises:[
+      {name:"Sprint Mechanics Warm-Up",target:"3 × 15m",cue:"Wall drills first. Apply to running.",sets:3},
+      {name:"Flying 20m Runs",target:"3 × (jog 10m + sprint 20m)",cue:"Jog into it. Top-end speed. Tall posture.",sets:3},
+      {name:"Hang Power Clean",target:"4 × 4 @ 62%",cue:"Consistent technique. Don't rush the catch.",sets:4},
+      {name:"Lateral Bound",target:"3 × 5/side",cue:"Stick the landing. Re-bound immediately.",sets:3},
+      {name:"Box Jump",target:"3 × 4",cue:"Step down between reps. Quality not fatigue.",sets:3},
+      {name:"40m Runs @ 82%",target:"4 × 40m",cue:"Slightly harder than Week 1.",sets:4},
+    ]},
+    fri:{title:"Friday S&C — Athletic Development",focus:"Match Week 1 weights. Move with intent.",intensity:"70-75%",exercises:[
+      {name:"Bench Press",target:"4 × 8",cue:"Same weight as Week 1 or +2.5kg if clean.",sets:4},
+      {name:"Bent-Over Row",target:"4 × 8",cue:"Retract scapulae. Pull to the hip.",sets:4},
+      {name:"Single-Arm DB Row",target:"3 × 10/side",cue:"Addresses shoulder asymmetry.",sets:3},
+      {name:"Plate Shrug",target:"3 × 15",cue:"Heavy. Protect the neck.",sets:3},
+      {name:"DB Lateral Raise",target:"3 × 15",cue:"Slow — 3 seconds down. Shoulder health.",sets:3},
+      {name:"Band Neck Isometrics",target:"3 × 10s × 4 directions",cue:"Build the habit.",sets:3},
+      {name:"McGill Side Plank",target:"2 × 30s/side",cue:"Lateral core stability.",sets:2},
+    ]}},
+  {wk:3,phase:"GPP",label:"GPP — Phase 1",theme:"Volume Peak — Highest reps of the program",motto:"Fire is the test of gold; adversity, of strong men.",thinker:"Seneca",focus:"ADVERSITY",
+    mon:{title:"Monday S&C — Strength (Volume Peak)",focus:"More reps this week is intentional. Build the engine.",intensity:"65-70%",exercises:[
+      {name:"Back Squat",target:"4 × 10",cue:"Highest rep week. Focus on depth and breathing.",sets:4},
+      {name:"Romanian Deadlift",target:"3 × 12",cue:"Build volume in the posterior chain.",sets:3},
+      {name:"Step-Up (weighted)",target:"3 × 12/side",cue:"Unilateral leg development. Slow and controlled.",sets:3},
+      {name:"Nordic Hamstring Curl",target:"3 × 5",cue:"Maintain slow eccentric regardless of fatigue.",sets:3},
+      {name:"Copenhagen Plank",target:"3 × 25s/side",cue:"Groin strength building. Don't let hips sag.",sets:3},
+      {name:"McGill Bird Dog",target:"3 × 10/side",cue:"Extra set this week.",sets:3},
+      {name:"Pallof Press",target:"3 × 12/side",cue:"Anti-rotation strength.",sets:3},
+    ]},
+    wed:{title:"Wednesday S&C — Power & Speed (Volume Peak)",focus:"5 conditioning reps this week.",intensity:"60-65%",exercises:[
+      {name:"Sprint Warm-Up",target:"4 × 15m",cue:"Extra volume warm-up this week.",sets:4},
+      {name:"Flying 20m Runs",target:"3 × (jog 10m + sprint 20m)",cue:"Quality maintained across all reps.",sets:3},
+      {name:"Hang Power Clean",target:"4 × 5 @ 60%",cue:"Extra rep per set. Maintain triple extension.",sets:4},
+      {name:"Box Jump",target:"4 × 4",cue:"Extra set. Still quality — step down between reps.",sets:4},
+      {name:"Hurdle Hop + Sprint 10m",target:"3 ×",cue:"Hop over hurdles then sprint immediately.",sets:3},
+      {name:"40m Runs @ 80%",target:"5 × 40m",cue:"Extra conditioning rep. Maintain split time.",sets:5},
+    ]},
+    fri:{title:"Friday S&C — Athletic Development (Volume Peak)",focus:"Peak volume week — embrace it.",intensity:"70-75%",exercises:[
+      {name:"Bench Press",target:"4 × 10",cue:"Highest rep set on bench. Maintain control.",sets:4},
+      {name:"DB Incline Press",target:"3 × 10",cue:"Consistent load from previous weeks.",sets:3},
+      {name:"Bent-Over Row",target:"4 × 10",cue:"High volume pull week.",sets:4},
+      {name:"Plate Shrug",target:"3 × 15",cue:"Neck protection work.",sets:3},
+      {name:"Face Pull",target:"3 × 20",cue:"Posterior shoulder health.",sets:3},
+      {name:"Band Neck Isometrics",target:"4 × 10s × 4 directions",cue:"Extra set this week.",sets:4},
+      {name:"Copenhagen Plank",target:"3 × 25s/side",cue:"Building groin resilience.",sets:3},
+    ]}},
+  {wk:4,phase:"ACC",label:"Accumulation — Phase 2",theme:"Getting Stronger — Weight goes up, reps come down",motto:"Make the best use of what is in your power.",thinker:"Epictetus",focus:"CONTROL",
+    mon:{title:"Monday S&C — Max Strength",focus:"HEAVIER now. 5 sets of 5. Long rests. Perfect form.",intensity:"75-80%",exercises:[
+      {name:"Back Squat",target:"5 × 5 @ 75-80%",cue:"Big jump in intensity. Take 3-4 min rest between sets.",sets:5},
+      {name:"Romanian Deadlift",target:"4 × 8",cue:"Load increases. Maintain hip hinge quality.",sets:4},
+      {name:"Single-Leg RDL",target:"3 × 8/side",cue:"Unilateral deficit work. Go heavier than GPP.",sets:3},
+      {name:"Nordic Hamstring Curl",target:"3 × 5",cue:"Maintain. Injury prevention does not reduce.",sets:3},
+      {name:"Broad Jump (post-squat)",target:"3 × 4",cue:"PAP window — jump max within 60s of finishing the squat set.",sets:3},
+      {name:"McGill Bird Dog",target:"3 × 8/side",cue:"Spine care under higher load weeks.",sets:3},
+    ]},
+    wed:{title:"Wednesday S&C — Power & Speed",focus:"Power work intensifies. Full recovery between runs.",intensity:"65-70%",exercises:[
+      {name:"Sprint Mechanics",target:"3 × 15m + 4 × 20m fly",cue:"Acceleration + top-end in same session.",sets:7},
+      {name:"Hang Power Clean",target:"4 × 4 @ 65%",cue:"Heavier than GPP. Fast elbows. Consistent catch.",sets:4},
+      {name:"Box Jump",target:"4 × 4",cue:"Height is the target. Reset fully between reps.",sets:4},
+      {name:"Depth Jump (40cm box)",target:"3 × 4",cue:"Reactive strength. Minimal ground contact.",sets:3},
+      {name:"Lateral Bound",target:"3 × 5/side",cue:"Power in lateral plane — mirrors defensive first step.",sets:3},
+      {name:"40m Runs @ 85%",target:"4 × 40m (2 min rest)",cue:"Increased intensity from GPP.",sets:4},
+    ]},
+    fri:{title:"Friday S&C — Athletic Development",focus:"Push:Pull ratio is critical for shoulder health.",intensity:"72-78%",exercises:[
+      {name:"Bench Press",target:"4 × 6 @ 72-78%",cue:"Reps drop, load increases. Retract scapulae always.",sets:4},
+      {name:"Bent-Over Row",target:"4 × 6",cue:"Match or exceed bench load for push:pull balance.",sets:4},
+      {name:"Weighted Pull-Up",target:"3 × 6-8",cue:"Add weight if bodyweight is easy. Full range.",sets:3},
+      {name:"Single-Arm DB Row",target:"3 × 10/side",cue:"Heavier than GPP. Control the movement.",sets:3},
+      {name:"Plate Shrug (heavy)",target:"3 × 15",cue:"Go heavier than GPP phase.",sets:3},
+      {name:"Face Pull",target:"3 × 20",cue:"External rotators. Don't reduce this ever.",sets:3},
+      {name:"Band Neck Isometrics",target:"3 × 10s × 4 directions",cue:"Non-negotiable.",sets:3},
+    ]}},
+  {wk:5,phase:"ACC",label:"Accumulation — Phase 2",theme:"Load Week — Push your numbers",motto:"The impediment to action advances action. What stands in the way becomes the way.",thinker:"Marcus Aurelius",focus:"RESILIENCE",
+    mon:{title:"Monday S&C — Max Strength (Load Week)",focus:"Add 2.5–5kg from last week if it felt solid.",intensity:"78-83%",exercises:[
+      {name:"Back Squat",target:"5 × 5 @ 78-83%",cue:"Heaviest squat of the program so far. Earn it.",sets:5},
+      {name:"Romanian Deadlift",target:"4 × 8",cue:"Heavier than Week 4. Maintain range.",sets:4},
+      {name:"Nordic Hamstring Curl",target:"3 × 6",cue:"Extra rep per set. Slow eccentric.",sets:3},
+      {name:"Step-Up (weighted)",target:"3 × 8/side",cue:"Heavier load. Slow and controlled.",sets:3},
+      {name:"Broad Jump (post-squat)",target:"3 × 3",cue:"PAP continues. Max effort jumps.",sets:3},
+      {name:"Copenhagen Plank",target:"3 × 30s/side",cue:"Time increases. Build groin resilience.",sets:3},
+    ]},
+    wed:{title:"Wednesday S&C — Power & Speed (Load Week)",focus:"Best performances this week. Push yourself.",intensity:"67-72%",exercises:[
+      {name:"Sprint Mechanics",target:"4 × 15m + 4 × 20m fly",cue:"Extra acceleration run this week.",sets:8},
+      {name:"Hang Power Clean",target:"4 × 4 @ 67%",cue:"Progressing load. Triple extension focus.",sets:4},
+      {name:"Box Jump",target:"4 × 4",cue:"Height should be increasing from Week 1.",sets:4},
+      {name:"Depth Jump",target:"3 × 4",cue:"Reactive strength. Touch the ground and go.",sets:3},
+      {name:"Hurdle Hop + Sprint 10m",target:"3 ×",cue:"Explosive combo drill.",sets:3},
+      {name:"40m Runs @ 88%",target:"3 × (4 × 40m)",cue:"Sets of 4. 20s rest within, 3 min between sets.",sets:12},
+    ]},
+    fri:{title:"Friday S&C — Athletic Development (Load Week)",focus:"Higher intensity on all upper body lifts.",intensity:"75-80%",exercises:[
+      {name:"Bench Press",target:"4 × 6 @ 75-80%",cue:"Load increases again. Controlled descent.",sets:4},
+      {name:"Bent-Over Row",target:"4 × 6",cue:"Match pushing load.",sets:4},
+      {name:"Weighted Pull-Up",target:"3 × 6",cue:"Heavier than Week 4.",sets:3},
+      {name:"Plate Shrug",target:"3 × 15 (heavier)",cue:"Trap development for contact sport.",sets:3},
+      {name:"DB Lateral Raise",target:"3 × 15",cue:"3-second eccentric. Shoulder health.",sets:3},
+      {name:"Face Pull",target:"3 × 20",cue:"Increase resistance slightly.",sets:3},
+      {name:"Band Neck Isometrics",target:"3 × 10s × 4 directions",cue:"Every Friday. Every week.",sets:3},
+    ]}},
+  {wk:6,phase:"ACC",label:"Accumulation — Phase 2",theme:"Strength Test Week — Find your new best",motto:"It is impossible for a man to learn what he thinks he already knows.",thinker:"Epictetus",focus:"HUMILITY",
+    mon:{title:"Monday S&C — Strength Test",focus:"Find a weight that challenges you for 4 reps. Record it.",intensity:"82-87%",exercises:[
+      {name:"Back Squat",target:"4 × 4 @ 82-87%",cue:"Test week. Find the heavy end of your range.",sets:4},
+      {name:"Romanian Deadlift",target:"4 × 6",cue:"Strong hip hinge under heavier load.",sets:4},
+      {name:"Nordic Hamstring Curl",target:"3 × 6",cue:"Maintain injury prevention work.",sets:3},
+      {name:"Broad Jump (post-squat)",target:"3 × 3",cue:"Post-activation potentiation. Max effort.",sets:3},
+      {name:"Lateral Band Walk",target:"3 × 15/side",cue:"Hip abductor strength.",sets:3},
+    ]},
+    wed:{title:"Wednesday S&C — Power & Speed Test",focus:"Try to set personal bests on sprint and jump.",intensity:"70-75%",exercises:[
+      {name:"Sprint Test — 5m & 40m",target:"3 trials each",cue:"Record your best time. This is your baseline test.",sets:3},
+      {name:"Broad Jump Test",target:"3 trials",cue:"Record your best distance.",sets:3},
+      {name:"Hang Power Clean",target:"4 × 3 @ 70%",cue:"Heavier load — fewer reps. Quality triple extension.",sets:4},
+      {name:"Box Jump (test height)",target:"4 × 3",cue:"Record your max height this week.",sets:4},
+      {name:"40m Runs @ 88%",target:"3 × (4 × 40m)",cue:"Conditioning maintained.",sets:12},
+    ]},
+    fri:{title:"Friday S&C — Upper Body Strength Test",focus:"Record your best on bench and row.",intensity:"80-87%",exercises:[
+      {name:"Bench Press",target:"4 × 4 @ 80-87%",cue:"Test week. Record your heaviest set.",sets:4},
+      {name:"Bent-Over Row",target:"4 × 6",cue:"Load matches bench. Record it.",sets:4},
+      {name:"Weighted Pull-Up",target:"3 × 5",cue:"Add more weight. Test your ceiling.",sets:3},
+      {name:"Plate Shrug (heavy)",target:"3 × 15",cue:"Heavier than any previous week.",sets:3},
+      {name:"Face Pull",target:"3 × 20",cue:"Rotator cuff health. Don't skip.",sets:3},
+      {name:"Band Neck Isometrics",target:"3 × 10s × 4 directions",cue:"Consistent. Every week.",sets:3},
+    ]}},
+  {wk:7,phase:"TRANS",label:"Transmutation — Phase 3",theme:"Power Phase — Lift heavy then jump/sprint",motto:"Difficulties strengthen the mind, as labour does the body.",thinker:"Seneca",focus:"PRESSURE",
+    mon:{title:"Monday S&C — Contrast Training",focus:"CONTRAST: Heavy squat → immediate broad jumps.",intensity:"85-90%",exercises:[
+      {name:"Back Squat",target:"4 × 3 @ 85-90%",cue:"HEAVIEST squats yet. 3-4 min rest. Spot mandatory.",sets:4},
+      {name:"Broad Jump (immediately post-squat)",target:"3 × 4 after EACH set",cue:"PAP window — jump max within 60s of finishing the squat set.",sets:3},
+      {name:"Romanian Deadlift",target:"3 × 6",cue:"Strength maintained. Focus on range of motion.",sets:3},
+      {name:"Nordic Hamstring Curl",target:"3 × 6",cue:"Non-negotiable injury prevention.",sets:3},
+      {name:"Step-Up (weighted)",target:"3 × 8/side",cue:"Unilateral strength for sprinting.",sets:3},
+      {name:"Copenhagen Plank",target:"4 × 30s/side",cue:"Groin resilience peak.",sets:4},
+    ]},
+    wed:{title:"Wednesday S&C — Explosive Power",focus:"Heaviest power work of the year.",intensity:"70-78%",exercises:[
+      {name:"Sprint Mechanics (max effort)",target:"3 × 10m + 3 × 20m fly",cue:"MAXIMUM intent. Record times.",sets:6},
+      {name:"Hang Power Clean",target:"5 × 3 @ 70-75%",cue:"Heaviest cleans yet. Fast elbows. Hard catch.",sets:5},
+      {name:"Box Jump",target:"4 × 4",cue:"Max height. Full reset.",sets:4},
+      {name:"Depth Jump",target:"4 × 4",cue:"Reactive strength at its peak.",sets:4},
+      {name:"Lateral Bound",target:"4 × 5/side",cue:"Extra set. Horizontal power.",sets:4},
+      {name:"40m Runs @ 90%",target:"3 × (4 × 40m)",cue:"Approaching maximum intensity.",sets:12},
+    ]},
+    fri:{title:"Friday S&C — Upper Body Power",focus:"Contrast: Heavy bench → explosive push-ups.",intensity:"80-87%",exercises:[
+      {name:"Bench Press",target:"4 × 4 @ 82-87%",cue:"Heavy. Explosive intent on the concentric.",sets:4},
+      {name:"Explosive Push-Up (post-bench)",target:"3 × 5",cue:"Contrast with bench. Express power.",sets:3},
+      {name:"Bent-Over Row",target:"4 × 6",cue:"Maintain pulling volume.",sets:4},
+      {name:"Weighted Pull-Up",target:"3 × 5",cue:"Heavy. Full range.",sets:3},
+      {name:"Full Neck/Trap Protocol",target:"Shrug + LR + Face Pull + Iso",cue:"Full sequence. Every Friday. Non-negotiable.",sets:3},
+      {name:"Pallof Press",target:"4 × 10/side",cue:"Anti-rotation at high load weeks.",sets:4},
+    ]}},
+  {wk:8,phase:"TRANS",label:"Transmutation — Phase 3",theme:"Explosive Power Peak — Maximum intent every rep",motto:"There is no easy way from the earth to the stars.",thinker:"Seneca",focus:"SACRIFICE",
+    mon:{title:"Monday S&C — Power Peak (Heaviest Week)",focus:"HEAVIEST week. Maximum effort.",intensity:"87-92%",exercises:[
+      {name:"Back Squat",target:"4 × 3 @ 87-92%",cue:"HEAVIEST week of the program. Earn every rep.",sets:4},
+      {name:"Box Jump (post-squat)",target:"3 × 4 after each squat set",cue:"PAP at maximum. Explosive.",sets:3},
+      {name:"Romanian Deadlift",target:"3 × 5",cue:"Heavier than any previous RDL.",sets:3},
+      {name:"Nordic Hamstring Curl",target:"3 × 6",cue:"Heavier band or higher angle. Push the eccentric.",sets:3},
+      {name:"Copenhagen Plank",target:"4 × 30s/side",cue:"Groin peak.",sets:4},
+    ]},
+    wed:{title:"Wednesday S&C — Explosive Power (Max)",focus:"Personal best attempts on all power work.",intensity:"75-78%",exercises:[
+      {name:"Sprint Test + Flying 20m",target:"3 × 10m + 4 × 20m fly (max)",cue:"Test yourself. Record times.",sets:7},
+      {name:"Hang Power Clean",target:"4 × 3 @ 75-78%",cue:"Heaviest clean of the program.",sets:4},
+      {name:"Box Jump (max height test)",target:"4 × 4",cue:"Record your max height.",sets:4},
+      {name:"Depth Jump",target:"4 × 4",cue:"Peak reactive strength.",sets:4},
+      {name:"40m Runs @ 92%",target:"3 × (4 × 40m)",cue:"Hardest conditioning of the program.",sets:12},
+    ]},
+    fri:{title:"Friday S&C — Upper Body Peak",focus:"Push every lift to its peak this week.",intensity:"85-90%",exercises:[
+      {name:"Bench Press",target:"4 × 3 @ 85-90%",cue:"Peak bench week. Spotter mandatory. Max effort.",sets:4},
+      {name:"Bent-Over Row",target:"4 × 5",cue:"Match pressing weight.",sets:4},
+      {name:"Weighted Pull-Up",target:"3 × 5",cue:"Heaviest pull-up weight of the program.",sets:3},
+      {name:"Full Neck/Trap Protocol",target:"Full sequence",cue:"Shrug → Lateral Raise → Face Pull → Neck Iso.",sets:3},
+      {name:"McGill Big 3",target:"2 rounds (full)",cue:"Spine health at max load week.",sets:2},
+      {name:"Copenhagen Plank",target:"4 × 30s/side",cue:"Peak groin work.",sets:4},
+    ]}},
+  {wk:9,phase:"REAL",label:"Realisation — Peak Week",theme:"Low volume, max intent — feel fast and powerful",motto:"Begin at once to live, and count each separate day as a separate life.",thinker:"Seneca",focus:"MOMENTUM",
+    mon:{title:"Monday S&C — Peak Week (Low Volume)",focus:"DELOAD volume, not intensity. You should feel FAST.",intensity:"88-93%",exercises:[
+      {name:"Back Squat",target:"3 × 3 @ 88-93%",cue:"Heaviest weight, fewest reps. Feel the power.",sets:3},
+      {name:"Broad Jump (measure)",target:"3 × 4",cue:"Compare to Week 1. This is your progress.",sets:3},
+      {name:"Romanian Deadlift",target:"3 × 5",cue:"Maintaining. Don't go heavy on deload week.",sets:3},
+      {name:"Nordic Hamstring Curl",target:"3 × 5",cue:"Maintain the habit. Injury prevention never stops.",sets:3},
+      {name:"McGill Bird Dog",target:"2 × 8/side",cue:"Reduced volume. Quality maintained.",sets:2},
+    ]},
+    wed:{title:"Wednesday S&C — Peak Speed Session",focus:"Personal bests. Feel the results of 9 weeks.",intensity:"78-82%",exercises:[
+      {name:"Sprint Test — 5m, 10m, 40m (RECORD)",target:"3 trials each",cue:"COMPARE TO WEEK 1. This is your 9-week progress.",sets:3},
+      {name:"Broad Jump (measure)",target:"3 × 4",cue:"Record your distance. Compare to Week 1.",sets:3},
+      {name:"Hang Power Clean",target:"3 × 3 @ 78-82%",cue:"Reduced volume. Maximum intent on each rep.",sets:3},
+      {name:"Box Jump (test max height)",target:"3 × 4",cue:"Peak week max height. Record it.",sets:3},
+      {name:"40m Runs @ 90%",target:"3 × (3 × 40m)",cue:"Reduced conditioning volume. Maintain speed.",sets:9},
+    ]},
+    fri:{title:"Friday S&C — Peak Upper Body",focus:"Reduced volume, maintained intensity.",intensity:"85-90%",exercises:[
+      {name:"Bench Press",target:"3 × 3 @ 85-90%",cue:"Peak week. Low volume, max intent.",sets:3},
+      {name:"Bent-Over Row",target:"3 × 5",cue:"Reduced reps. Maintained load.",sets:3},
+      {name:"Weighted Pull-Up",target:"3 × 4",cue:"Deload volume. Same weight as peak week.",sets:3},
+      {name:"Full Neck/Trap Protocol",target:"Full sequence (maintenance)",cue:"Neck work does not reduce. Ever.",sets:3},
+      {name:"McGill Big 3",target:"2 rounds",cue:"Spine care maintained throughout peak.",sets:2},
+      {name:"Copenhagen Plank",target:"3 × 25s/side",cue:"Slightly reduced from peak week.",sets:3},
+    ]}},
+];
+
+const DOMAINS=[{id:'sleep',label:'Sleep',icon:'😴'},{id:'energy',label:'Energy',icon:'⚡'},{id:'mood',label:'Mood',icon:'😊'},{id:'soreness',label:'Soreness',icon:'💪'},{id:'stress',label:'Stress',icon:'🧠'}];
+const TESTS_DEF=[{id:'sprint_5m',name:'5m Sprint',unit:'sec',low:true,target:'<1.05'},{id:'sprint_10m',name:'10m Sprint',unit:'sec',low:true,target:'<1.85'},{id:'sprint_40m',name:'40m Sprint',unit:'sec',low:true,target:'<5.6'},{id:'cod_505',name:'5-0-5 COD',unit:'sec',low:true,target:'<2.45'},{id:'cmj',name:'CMJ Height',unit:'cm',low:false,target:'>50cm'},{id:'broad_jump',name:'Broad Jump',unit:'cm',low:false,target:'>220cm'},{id:'squat_1rm',name:'Back Squat 1RM',unit:'kg',low:false,target:'>1.5× BW'},{id:'bench_1rm',name:'Bench Press 1RM',unit:'kg',low:false,target:'>1.0× BW'},{id:'yoyo_level',name:'Yo-Yo Level',unit:'lvl',low:false,target:'Lvl 17-19'}];
+
+// ── Auth ──────────────────────────────────────────────────────────────────────
+function showCard(id){document.querySelectorAll('.login-card').forEach(c=>c.style.display='none');document.getElementById(id).style.display='block';}
+
+async function doRegister(){
+  const name=document.getElementById('rg-name').value.trim();
+  const year=document.getElementById('rg-year').value;
+  const pos=document.getElementById('rg-pos').value;
+  const pin=document.getElementById('rg-pin').value.trim();
+  if(!name||pin.length!==4||!/^\d{4}$/.test(pin)){toast('Enter your name and a 4-digit PIN',true);return;}
+  setLoading('btn-reg',true);
+  // Check if name taken
+  const {data:existing}=await sb.from('profiles').select('id').ilike('name',name).eq('role','student');
+  if(existing&&existing.length>0){toast('Name already taken — try a different name',true);setLoading('btn-reg',false);return;}
+  const {data,error}=await sb.from('profiles').insert({name,pin,role:'student',year_level:year,position:pos}).select().single();
+  setLoading('btn-reg',false);
+  if(error){toast('Error creating account: '+error.message,true);return;}
+  CU=data; loadApp();
+}
+
+async function doLogin(){
+  const name=document.getElementById('li-name').value.trim();
+  const pin=document.getElementById('li-pin').value.trim();
+  if(!name||!pin){toast('Enter your name and PIN',true);return;}
+  setLoading('btn-login',true);
+  const {data,error}=await sb.from('profiles').select('*').ilike('name',name).eq('pin',pin).eq('role','student').single();
+  setLoading('btn-login',false);
+  if(error||!data){toast('Name or PIN incorrect',true);return;}
+  CU=data; loadApp();
+}
+
+async function doCoachLogin(){
+  const name=document.getElementById('co-name').value.trim();
+  const pin=document.getElementById('co-pin').value.trim();
+  if(!name||!pin){toast('Enter name and PIN',true);return;}
+  setLoading('btn-coach',true);
+  const {data,error}=await sb.from('profiles').select('*').ilike('name',name).eq('pin',pin).eq('role','coach').single();
+  setLoading('btn-coach',false);
+  if(error||!data){toast('Coach credentials not found',true);return;}
+  CU=data; loadApp();
+}
+
+function loadApp(){
+  document.getElementById('login').classList.remove('active');
+  document.getElementById('main').classList.add('active');
+  renderNav(); nav('dashboard');
+}
+
+function doLogout(){CU=null;document.getElementById('login').classList.add('active');document.getElementById('main').classList.remove('active');document.getElementById('li-name').value='';document.getElementById('li-pin').value='';showCard('card-login');}
+
+// ── Navigation ────────────────────────────────────────────────────────────────
+const STUDENT_NAV=[
+  {section:'TRAINING',items:[{id:'dashboard',icon:'🏠',label:'Dashboard'},{id:'workouts',icon:'🏋',label:'Workouts'},{id:'testing',icon:'⚡',label:'My Testing'}]},
+  {section:'WELLBEING',items:[{id:'wellbeing',icon:'❤️',label:'Wellbeing'},{id:'nutrition',icon:'🍎',label:'Nutrition'},{id:'recovery',icon:'🔄',label:'Recovery'}]},
+  {section:'PROGRAM',items:[{id:'mottos',icon:'💬',label:'Weekly Focus'},{id:'info',icon:'ℹ️',label:'Program Info'}]},
+];
+const COACH_NAV=[
+  {section:'COACH',items:[{id:'dashboard',icon:'📊',label:'Squad Overview'},{id:'students',icon:'👥',label:'All Students'},{id:'flags',icon:'🚨',label:'Wellbeing Flags'}]},
+  {section:'DATA',items:[{id:'attendance',icon:'📅',label:'Session Logs'},{id:'testing',icon:'⚡',label:'Testing Results'}]},
+];
+
+function renderNav(){
+  const navDef=CU.role==='coach'?COACH_NAV:STUDENT_NAV;
+  let html='';
+  navDef.forEach(s=>{
+    html+=`<div class="nav-section">${s.section}</div>`;
+    s.items.forEach(item=>{html+=`<div class="nav-item${item.id===CP?' active':''}" onclick="nav('${item.id}')" data-page="${item.id}"><span class="icon">${item.icon}</span>${item.label}</div>`;});
+  });
+  const userHtml=`<div class="name">${CU.name}</div><div class="pos">${CU.role==='coach'?'Coach':CU.position+' · '+CU.year_level}</div><div class="logout" onclick="doLogout()">Sign out</div>`;
+  document.getElementById('side-nav').innerHTML=html;
+  document.getElementById('side-user').innerHTML=userHtml;
+  document.getElementById('mob-nav').innerHTML=`<div style="padding:16px 18px 0"><div style="font-size:11px;color:rgba(255,255,255,0.4);letter-spacing:2px;margin-bottom:4px">SIGNED IN AS</div><div style="font-weight:700;margin-bottom:16px">${CU.name}</div></div>${html}<div style="padding:16px 18px"><button class="btn btn-ghost btn-sm" onclick="doLogout()">Sign Out</button></div>`;
+}
+
+function nav(page){
+  CP=page; renderNav();
+  const c=document.getElementById('content');
+  if(CU.role==='coach'){
+    if(page==='dashboard')c.innerHTML=renderCoachDash();
+    else if(page==='students')renderAllStudents();
+    else if(page==='flags')renderFlags();
+    else if(page==='attendance')renderCoachLogs();
+    else if(page==='testing')renderCoachTesting();
+  } else {
+    if(page==='dashboard')renderStudentDash();
+    else if(page==='workouts')renderWorkouts();
+    else if(page==='testing')renderTesting();
+    else if(page==='wellbeing')renderWellbeing();
+    else if(page==='nutrition')c.innerHTML=renderNutrition();
+    else if(page==='recovery')c.innerHTML=renderRecovery();
+    else if(page==='mottos')c.innerHTML=renderMottos();
+    else if(page==='info')c.innerHTML=renderInfo();
+  }
+  document.getElementById('mob-menu').classList.remove('open');
+}
+
+// ── Student Dashboard ─────────────────────────────────────────────────────────
+async function renderStudentDash(){
+  const c=document.getElementById('content');
+  c.innerHTML=`<div class="page"><div style="padding:40px;text-align:center"><div class="spinner"></div></div></div>`;
+  const [logsR,wellR]=await Promise.all([
+    sb.from('session_logs').select('*').eq('student_id',CU.id).order('logged_at',{ascending:false}),
+    sb.from('wellbeing').select('*').eq('student_id',CU.id).order('week_number',{ascending:false}).limit(5),
+  ]);
+  const logs=logsR.data||[];
+  const well=wellR.data||[];
+  const sessionCount=logs.length;
+  const progressWeek=Math.min(Math.ceil((sessionCount+1)/3),9);
+  const wkData=WEEKS[progressWeek-1];
+  const pct=Math.round((sessionCount/27)*100);
+  const dayOfWeek=new Date().getDay();
+  const nextMap={1:'Monday S&C (7:15am)',2:'Wednesday S&C tomorrow',3:'Wednesday S&C (7:15am)',4:'Friday S&C tomorrow',5:'Friday S&C (7:15am)',0:'Monday S&C on Monday',6:'Monday S&C on Monday'};
+  const nextSession=nextMap[dayOfWeek];
+  const recentHtml=logs.slice(0,4).map(l=>{
+    const sessLabel={mon:'Monday S&C',wed:'Wednesday S&C',fri:'Friday S&C'}[l.session_day]||l.session_day;
+    const date=new Date(l.logged_at).toLocaleDateString('en-AU',{weekday:'short',day:'numeric',month:'short'});
+    return `<div class="session-row"><div class="session-dot"></div><div class="session-info"><div class="sn">Week ${l.week_number} — ${sessLabel}</div><div class="sd">${date}</div></div>${l.avg_rpe?`<div class="srpe">RPE ${l.avg_rpe}</div>`:''}</div>`;
+  }).join('')||'<div class="empty-state"><div class="ei">📋</div><p>No sessions logged yet.<br>Head to Workouts to start.</p></div>';
+
+  c.innerHTML=`<div class="page">
+    <div style="background:linear-gradient(135deg,rgba(27,79,138,0.3),rgba(13,33,55,0.6));border:1px solid rgba(27,79,138,0.3);border-radius:var(--radius);padding:22px;margin-bottom:22px;position:relative;overflow:hidden">
+      <div style="font-size:12px;color:var(--gray);margin-bottom:3px">Welcome back,</div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:30px;line-height:1;margin-bottom:6px"><span style="color:var(--gold)">${CU.name.split(' ')[0]}</span></div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.5)">${CU.position} · ${CU.year_level}</div>
+    </div>
+    <div class="grid-4" style="margin-bottom:14px">
+      <div class="stat-tile"><div class="num">${sessionCount}</div><div class="label">Sessions Logged</div></div>
+      <div class="stat-tile" style="border-top-color:var(--steel)"><div class="num" style="color:var(--steel)">${progressWeek}</div><div class="label">Current Week</div></div>
+      <div class="stat-tile" style="border-top-color:var(--green)"><div class="num" style="color:var(--green)">${pct}%</div><div class="label">Term Progress</div></div>
+      <div class="stat-tile" style="border-top-color:#c084fc"><div class="num" style="color:#c084fc">${27-sessionCount}</div><div class="label">Sessions Left</div></div>
+    </div>
+    <div class="progress-bar" style="margin-bottom:22px"><div class="fill" style="width:${pct}%"></div></div>
+    <div class="grid-2" style="margin-bottom:14px">
+      <div style="background:linear-gradient(135deg,rgba(26,122,66,0.15),rgba(13,33,55,0.4));border:1px solid rgba(26,122,66,0.2);border-radius:var(--radius);padding:16px">
+        <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:#4ade80;margin-bottom:6px">⚡ NEXT UP</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:20px;margin-bottom:3px">${nextSession}</div>
+        <div style="font-size:12px;color:var(--gray);margin-bottom:10px">Week ${progressWeek} · ${wkData.label}</div>
+        <button class="btn btn-green btn-sm" onclick="nav('workouts')">Go to Workout →</button>
+      </div>
+      <div class="motto-card">
+        <div class="motto-lbl">Weekly Focus</div>
+        <div class="motto-theme">${wkData.focus}</div>
+        <div class="motto-txt">"${wkData.motto}"</div>
+        <div class="motto-author">— ${wkData.thinker}</div>
+      </div>
+    </div>
+    <div class="section-title">Recent Sessions</div>
+    <div class="card">${recentHtml}</div>
+  </div>`;
+}
+
+// ── Workouts ──────────────────────────────────────────────────────────────────
+async function renderWorkouts(){
+  const c=document.getElementById('content');
+  c.innerHTML=`<div class="page"><div style="padding:40px;text-align:center"><div class="spinner"></div></div></div>`;
+  // load logs for this student
+  const {data:logs}=await sb.from('session_logs').select('week_number,session_day').eq('student_id',CU.id);
+  const loggedSet=new Set((logs||[]).map(l=>`${l.week_number}_${l.session_day}`));
+  const wk=WEEKS[CW-1];
+  const phaseClass={GPP:'phase-gpp',ACC:'phase-acc',TRANS:'phase-trans',REAL:'phase-real'}[wk.phase];
+  const sess=CS==='mon'?wk.mon:CS==='wed'?wk.wed:wk.fri;
+  const logKey=`${CW}_${CS}`;
+  const isLogged=loggedSet.has(logKey);
+  // load existing log for this session
+  const {data:existing}=await sb.from('session_logs').select('*').eq('student_id',CU.id).eq('week_number',CW).eq('session_day',CS).single();
+  const savedExercises=(existing||{}).exercises||{};
+  const savedNotes=(existing||{}).notes||'';
+  TL={...savedExercises};
+
+  const weekTabsHtml=WEEKS.map((w,i)=>{
+    const hasAll=['mon','wed','fri'].every(s=>loggedSet.has(`${w.wk}_${s}`));
+    return `<div class="week-tab${i+1===CW?' active':''}${hasAll?' completed':''}" onclick="setWeek(${w.wk})">${w.wk}</div>`;
+  }).join('');
+  const sessionTabsHtml=[{k:'mon',l:'Monday'},{k:'wed',l:'Wednesday'},{k:'fri',l:'Friday'}].map(s=>`<div class="session-tab${s.k===CS?' active':''}" onclick="setSess('${s.k}')">${s.l}</div>`).join('');
+  const exHtml=sess.exercises.map((ex,ei)=>{
+    const setRows=Array.from({length:ex.sets},(_,si)=>{
+      const sv=(TL[ei]||{})[si]||{};
+      return `<div class="set-grid">
+        <div class="set-label">S${si+1}</div>
+        <input type="number" placeholder="kg" value="${sv.weight||''}" inputmode="decimal" oninput="setField(${ei},${si},'weight',this.value)">
+        <input type="number" placeholder="reps" value="${sv.reps||''}" inputmode="numeric" oninput="setField(${ei},${si},'reps',this.value)">
+        <select class="rpe-sel" onchange="setField(${ei},${si},'rpe',this.value)">
+          <option value="">RPE</option>${[6,7,7.5,8,8.5,9,9.5,10].map(r=>`<option value="${r}"${sv.rpe==r?' selected':''}>${r}</option>`).join('')}
+        </select>
+      </div>`;
+    }).join('');
+    return `<div class="exercise-card">
+      <div class="exercise-header" onclick="toggleEx(${ei})">
+        <div class="ex-name">${ex.name}</div>
+        <div class="ex-target">${ex.target}</div>
+        <div class="ex-chevron" id="chev-${ei}">▾</div>
+      </div>
+      <div class="exercise-body" id="exb-${ei}">
+        <div class="ex-cue">${ex.cue}</div>
+        <div class="set-grid" style="margin-bottom:5px"><div class="set-label"></div><div class="hcell">Weight</div><div class="hcell">Reps</div><div class="hcell">RPE</div></div>
+        ${setRows}
+      </div>
+    </div>`;
+  }).join('');
+
+  c.innerHTML=`<div class="page">
+    <div class="page-header"><div class="eyebrow">Training Program</div><h1>Workouts</h1><p>9-week progressive program — log your sets, weights, and RPE every session.</p></div>
+    <div class="info-bar">📍 <strong>Week ${CW} of 9</strong> — ${wk.label} · ${wk.theme}</div>
+    <div class="week-tabs">${weekTabsHtml}</div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap">
+      <span class="phase-badge ${phaseClass}">${wk.phase}</span>
+      ${isLogged?'<span style="font-size:11px;color:var(--green);font-weight:700">✓ Session logged</span>':''}
+    </div>
+    <div class="session-tabs">${sessionTabsHtml}</div>
+    <div class="card" style="margin-bottom:10px;padding:12px 15px">
+      <div style="font-size:11px;color:var(--gray);margin-bottom:1px">${sess.title}</div>
+      <div style="font-size:13px;font-weight:600;color:var(--gold)">${sess.focus}</div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:1px">Intensity: <strong style="color:var(--white)">${sess.intensity}</strong></div>
+    </div>
+    ${exHtml}
+    <div class="sess-notes" style="margin-bottom:10px"><label>Session Notes</label><textarea id="sess-note" placeholder="How did it feel? Personal bests? Anything to flag?">${savedNotes}</textarea></div>
+    <div class="save-bar"><button class="btn btn-green" id="btn-save-sess" onclick="saveSession()">${isLogged?'✓ UPDATE LOG':'✓ MARK SESSION COMPLETE'}</button></div>
+  </div>`;
+}
+
+function setField(ei,si,field,val){if(!TL[ei])TL[ei]={};if(!TL[ei][si])TL[ei][si]={};TL[ei][si][field]=val;}
+function toggleEx(ei){document.getElementById(`exb-${ei}`).classList.toggle('open');document.getElementById(`chev-${ei}`).classList.toggle('open');}
+function setWeek(w){CW=w;TL={};renderWorkouts();}
+function setSess(s){CS=s;TL={};renderWorkouts();}
+
+async function saveSession(){
+  setLoading('btn-save-sess',true);
+  const notes=document.getElementById('sess-note')?.value||'';
+  let rpeSum=0,rpeCount=0;
+  Object.values(TL).forEach(sets=>Object.values(sets).forEach(s=>{if(s.rpe){rpeSum+=parseFloat(s.rpe);rpeCount++;}}));
+  const avgRpe=rpeCount>0?Math.round(rpeSum/rpeCount*10)/10:null;
+  // upsert
+  const {error}=await sb.from('session_logs').upsert({
+    student_id:CU.id, week_number:CW, session_day:CS,
+    exercises:TL, notes, avg_rpe:avgRpe, logged_at:new Date().toISOString()
+  },{onConflict:'student_id,week_number,session_day'});
+  setLoading('btn-save-sess',false);
+  if(error){toast('Error saving: '+error.message,true);return;}
+  toast('Session saved ✓');
+  TL={};renderWorkouts();
+}
+
+// ── Wellbeing ─────────────────────────────────────────────────────────────────
+async function renderWellbeing(){
+  const c=document.getElementById('content');
+  c.innerHTML=`<div class="page"><div style="padding:40px;text-align:center"><div class="spinner"></div></div></div>`;
+  const {data:existing}=await sb.from('wellbeing').select('*').eq('student_id',CU.id).eq('week_number',CW).single();
+  WBT=existing?{sleep:existing.sleep,energy:existing.energy,mood:existing.mood,soreness:existing.soreness,stress:existing.stress}:{};
+  const {data:hist}=await sb.from('wellbeing').select('*').eq('student_id',CU.id).order('week_number',{ascending:false}).limit(6);
+  const today=new Date().toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long'});
+  const domsHtml=DOMAINS.map(d=>{
+    const cur=WBT[d.id]||0;
+    const dots=[1,2,3,4,5].map(n=>`<div class="rating-dot${cur==n?' s'+n:''}" onclick="setWB('${d.id}',${n})" id="wd-${d.id}-${n}">${n}</div>`).join('');
+    return `<div class="wb-domain"><div class="domain-name">${d.icon} ${d.label}</div><div class="rating-dots">${dots}</div></div>`;
+  }).join('');
+  const flagged=DOMAINS.filter(d=>(WBT[d.id]||0)<=2&&(WBT[d.id]||0)>0);
+  const flagHtml=flagged.length>=2?`<div class="flag-card"><div class="ft">⚠️ Low Score Alert</div><p>You've scored low on ${flagged.map(d=>d.label).join(' and ')}. Please speak with your coach before your next session.</p></div>`:'';
+  const histHtml=(hist||[]).map(w=>{
+    const avg=DOMAINS.reduce((s,d)=>s+(w[d.id]||0),0)/DOMAINS.length;
+    return `<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="font-size:12px">Week ${w.week_number}</span><span style="font-size:11px;color:var(--gold);font-weight:700">${Math.round(avg*10)/10}/5</span></div><div class="progress-bar"><div class="fill" style="width:${Math.round(avg/5*100)}%"></div></div></div>`;
+  }).join('');
+  c.innerHTML=`<div class="page">
+    <div class="page-header"><div class="eyebrow">Weekly Check-In</div><h1>Wellbeing</h1><p>${today} — Rate 1 (very poor) to 5 (excellent)</p></div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-title" style="margin-bottom:14px">Week ${CW} — How Are You Feeling?</div>
+      ${domsHtml}${flagHtml}
+      <div style="margin-top:14px"><button class="btn btn-green" id="btn-wb" onclick="saveWellbeing()">Save Check-In</button></div>
+    </div>
+    ${histHtml?`<div class="section-title">Recent Weeks</div><div class="card">${histHtml}</div>`:''}
+  </div>`;
+}
+
+function setWB(domain,val){
+  WBT[domain]=val;
+  DOMAINS.forEach(d=>[1,2,3,4,5].forEach(n=>{const el=document.getElementById(`wd-${d.id}-${n}`);if(el)el.className=`rating-dot${WBT[d.id]==n?' s'+n:''}`;}));
+}
+async function saveWellbeing(){
+  setLoading('btn-wb',true);
+  const {error}=await sb.from('wellbeing').upsert({student_id:CU.id,week_number:CW,...WBT,checked_at:new Date().toISOString()},{onConflict:'student_id,week_number'});
+  setLoading('btn-wb',false);
+  if(error){toast('Error: '+error.message,true);return;}
+  toast('Wellbeing check-in saved ✓'); renderWellbeing();
+}
+
+// ── Testing ───────────────────────────────────────────────────────────────────
+async function renderTesting(){
+  const c=document.getElementById('content');
+  c.innerHTML=`<div class="page"><div style="padding:40px;text-align:center"><div class="spinner"></div></div></div>`;
+  const {data:rows}=await sb.from('testing').select('*').eq('student_id',CU.id);
+  const byPeriod={};(rows||[]).forEach(r=>byPeriod[r.period]=r);
+  const periods=[{id:'pre',label:'Pre-Term (Week 1)'},{id:'mid',label:'Mid-Term (Week 5)'},{id:'end',label:'End-Term (Week 9)'}];
+  const html=periods.map(p=>{
+    const saved=byPeriod[p.id]||{};
+    const testRows=TESTS_DEF.map(t=>`<div class="test-row">
+      <div class="test-name-col"><div class="test-name">${t.name}</div><div class="test-target">Target: ${t.target}</div></div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <input type="number" class="test-input" value="${saved[t.id]||''}" inputmode="decimal" placeholder="—"
+          onchange="saveTestField('${p.id}','${t.id}',this.value)" data-period="${p.id}" data-test="${t.id}">
+        <span class="test-unit">${t.unit}</span>
+      </div>
+    </div>`).join('');
+    return `<div style="margin-bottom:22px"><div class="section-title">${p.label}</div>${testRows}<button class="btn btn-ghost btn-sm" style="margin-top:10px" onclick="saveTestPeriod('${p.id}')">Save ${p.label} Results</button></div>`;
+  }).join('');
+  // Progress comparison
+  const pre=byPeriod.pre||{}; const end=byPeriod.end||{};
+  const compRows=TESTS_DEF.map(t=>{
+    if(!pre[t.id]||!end[t.id])return '';
+    const diff=t.low?pre[t.id]-end[t.id]:end[t.id]-pre[t.id];
+    const improved=diff>0;
+    return `<div class="test-row"><div class="test-name-col"><div class="test-name">${t.name}</div></div><div style="display:flex;gap:10px;align-items:center"><span style="font-size:12px;color:var(--gray)">${pre[t.id]}${t.unit}</span><span style="color:var(--gray)">→</span><span style="font-size:13px;font-weight:700">${end[t.id]}${t.unit}</span><span class="badge ${improved?'bg':'bb'}">${improved?'▲':'▼'}${Math.abs(Math.round((end[t.id]-pre[t.id])*100)/100)}</span></div></div>`;
+  }).filter(Boolean).join('');
+  c.innerHTML=`<div class="page">
+    <div class="page-header"><div class="eyebrow">Performance Data</div><h1>My Testing</h1><p>Record test results at start, middle, and end of term. Track your progress.</p></div>
+    <div class="info-bar">💡 Enter results after each testing session. Your coach can also see these results.</div>
+    ${html}
+    ${compRows?`<div class="section-title">Progress (Pre vs End)</div><div class="card">${compRows}</div>`:''}
+  </div>`;
+}
+
+let testTemp={};
+function saveTestField(period,testId,val){if(!testTemp[period])testTemp[period]={};testTemp[period][testId]=parseFloat(val)||null;}
+async function saveTestPeriod(period){
+  if(!testTemp[period]||Object.keys(testTemp[period]).length===0){toast('Enter at least one result first',true);return;}
+  const payload={student_id:CU.id,period,...testTemp[period],tested_at:new Date().toISOString()};
+  const {error}=await sb.from('testing').upsert(payload,{onConflict:'student_id,period'});
+  if(error){toast('Error: '+error.message,true);return;}
+  toast(`${period.toUpperCase()} results saved ✓`);
+}
+
+// ── Nutrition ─────────────────────────────────────────────────────────────────
+function renderNutrition(){
+  return`<div class="page">
+    <div class="page-header"><div class="eyebrow">Fuelling for Performance</div><h1>Nutrition</h1><p>Key principles from your nutrition protocol.</p></div>
+    <div class="card" style="margin-bottom:18px;background:linear-gradient(135deg,rgba(26,122,66,0.15),rgba(13,33,55,0.4));border-color:rgba(26,122,66,0.2)">
+      <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:#4ade80;margin-bottom:6px">TODAY'S MOST IMPORTANT ACTION</div>
+      <div style="font-size:15px;font-weight:600;line-height:1.4">Eat 25–40g of protein within 60 minutes of every training session. Chocolate milk ($0.80) counts.</div>
+    </div>
+    ${[{icon:'🍌',tip:'Pre-session (6:30am): banana + toast with peanut butter OR overnight oats. Prepare it the night before.'},{icon:'🥛',tip:'Post-session: 500mL chocolate milk within 30 min. Best recovery tool in sport at the lowest cost.'},{icon:'💧',tip:'Hydration: 500mL water before you arrive. Urine should be pale yellow by midday.'},{icon:'🍗',tip:'Protein target: 25–40g per meal, 4–5 meals per day. 70kg athlete = 112–154g daily.'},{icon:'🍚',tip:'Carbs at dinner the night before training days. Top up the fuel tank overnight.'},{icon:'😴',tip:'Sleep is your most powerful recovery tool. 8–9 hours. Phone down 60 min before bed.'},{icon:'🥚',tip:'Budget meal: 3 eggs + 2 toast + banana = 35g protein + 40g carbs. ~$2. Perfect post-session.'}].map(t=>`<div class="card" style="margin-bottom:8px;padding:13px 15px;display:flex;gap:10px;align-items:flex-start"><span style="font-size:22px;flex-shrink:0">${t.icon}</span><span style="font-size:13px;line-height:1.5;color:rgba(255,255,255,0.8)">${t.tip}</span></div>`).join('')}
+    <div class="section-title">Macro Quick Reference</div>
+    <div class="card">${[['Heavy Training Day (Mon/Wed)','6–8g carbs/kg · 1.8–2.2g protein/kg'],['Moderate Day (Fri)','5–6g carbs/kg · 1.6–2.0g protein/kg'],['Recovery Day (Tue/Thu)','4–5g carbs/kg · 1.6–2.0g protein/kg'],['Game Day','7–9g carbs/kg — carb-load the night before']].map(([l,v])=>`<div style="padding:8px 0;border-bottom:1px solid var(--border)"><div style="font-size:13px;font-weight:600">${l}</div><div style="font-size:12px;color:var(--gray)">${v}</div></div>`).join('')}</div>
+  </div>`;
+}
+
+// ── Recovery ──────────────────────────────────────────────────────────────────
+function renderRecovery(){
+  return`<div class="page">
+    <div class="page-header"><div class="eyebrow">Adapt. Rebuild. Repeat.</div><h1>Recovery</h1><p>Recovery is where you adapt. Training breaks you down. Recovery builds you back up stronger.</p></div>
+    <div class="card" style="margin-bottom:18px;background:linear-gradient(135deg,rgba(27,79,138,0.2),rgba(13,33,55,0.4));border-color:rgba(27,79,138,0.2)">
+      <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:#60a5fa;margin-bottom:8px">THE HIERARCHY — DO THESE IN ORDER</div>
+      ${[['1','Sleep 8–9 hours every night','Non-negotiable foundation'],['2','Post-session nutrition within 60 min','Protein + carbs after every session'],['3','Hydrate to pale yellow urine','1.5× fluid lost through sweat'],['4','10 min easy movement on rest days','Walk, swim, or bike — not sitting still'],['5','Foam roll 3× per week minimum','10 min — target quads, hammies, glutes, thoracic'],['6','Cold water after field sessions only','NOT after gym sessions — blunts strength gains']].map(([n,t,s])=>`<div style="display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-bottom:1px solid var(--border)"><div style="width:22px;height:22px;border-radius:50%;background:var(--steel);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">${n}</div><div><div style="font-size:13px;font-weight:600">${t}</div><div style="font-size:11px;color:var(--gray)">${s}</div></div></div>`).join('')}
+    </div>
+    ${[{icon:'🧊',tip:'CWI: 10–15 min at 10–14°C after FIELD sessions only. NOT after gym — it blunts strength adaptation.'},{icon:'🔄',tip:'Foam roll: 60 sec each — quads, hamstrings, glutes, IT band, thoracic spine, calves. 3× per week minimum.'},{icon:'🌙',tip:'Pre-sleep: no screens 60 min before bed. Room temp 16–18°C. Same bedtime every night — trains your body clock.'},{icon:'🚶',tip:'Active recovery (Tue/Thu): easy walk or swim. Low heart rate. Clears waste faster than full rest.'},{icon:'⚡',tip:'Contrast shower: 90s warm → 30s cold × 4. Accessible recovery when a cold plunge is not available.'}].map(t=>`<div class="card" style="margin-bottom:8px;padding:13px 15px;display:flex;gap:10px;align-items:flex-start"><span style="font-size:22px;flex-shrink:0">${t.icon}</span><span style="font-size:13px;line-height:1.5;color:rgba(255,255,255,0.8)">${t.tip}</span></div>`).join('')}
+  </div>`;
+}
+
+// ── Mottos ────────────────────────────────────────────────────────────────────
+function renderMottos(){
+  const phC={GPP:'var(--green)',ACC:'var(--steel)',TRANS:'#c084fc',REAL:'var(--orange)'};
+  const phB={GPP:'rgba(26,122,66,0.1)',ACC:'rgba(27,79,138,0.1)',TRANS:'rgba(90,42,122,0.1)',REAL:'rgba(192,80,32,0.1)'};
+  return`<div class="page">
+    <div class="page-header"><div class="eyebrow">Character & Performance</div><h1>Weekly Focus</h1><p>Each week has a character theme and a quote. Read Monday. Carry it all week. Reflect Sunday.</p></div>
+    ${WEEKS.map(w=>{const isCur=w.wk===CW;const c=phC[w.phase];const b=phB[w.phase];return`<div class="card" style="margin-bottom:8px;${isCur?`border-color:${c};background:${b}`:''};cursor:default">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:6px">
+        <div><div style="font-size:10px;font-weight:700;letter-spacing:2px;color:${c};margin-bottom:3px">WEEK ${w.wk} · ${w.focus}</div><div style="font-size:14px;font-style:italic;color:var(--white);line-height:1.4">"${w.motto}"</div><div style="font-size:11px;color:var(--gray);margin-top:3px">— ${w.thinker}</div></div>
+        ${isCur?`<div style="background:${c};color:#fff;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:3px 7px;border-radius:3px;flex-shrink:0">THIS WEEK</div>`:`<div style="color:var(--gray);font-size:11px;flex-shrink:0">Wk${w.wk}</div>`}
+      </div>
+      <div style="font-size:11px;color:var(--gray);border-top:1px solid var(--border);padding-top:6px">${w.theme}</div>
+    </div>`;}).join('')}
+  </div>`;
+}
+
+// ── Info ──────────────────────────────────────────────────────────────────────
+function renderInfo(){
+  return`<div class="page">
+    <div class="page-header"><div class="eyebrow">Bundaberg SHS</div><h1>Program Info</h1></div>
+    <div class="card" style="margin-bottom:14px;background:linear-gradient(135deg,rgba(201,162,39,0.1),rgba(13,33,55,0.5));border-color:rgba(201,162,39,0.2)">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:26px;color:var(--gold);margin-bottom:3px">RL ACADEMY</div>
+      <div style="font-size:12px;color:var(--gray)">Bundaberg State High School · NRL-Standard Methodology</div>
+    </div>
+    <div class="section-title">Weekly Schedule</div>
+    <div class="card" style="margin-bottom:14px">${[['Mon 7:15am','S&C — Lower Body Strength','🏋'],['Mon class','RL Skills — Attack & Ball Handling','🏉'],['Mon after school','Field Training — Full Team Session','⚡'],['Wed 7:15am','S&C — Power & Speed','🏋'],['Wed after school','Field Training — Scenarios & Review','⚡'],['Fri 7:15am','S&C — Athletic Development','🏋'],['Fri class','RL Skills — Defence & Film Analysis','🎬']].map(([d,s,i])=>`<div class="session-row"><span style="font-size:17px">${i}</span><div class="session-info"><div class="sn">${s}</div><div class="sd">${d}</div></div></div>`).join('')}</div>
+    <div class="section-title">Non-Negotiables</div>
+    <div class="card" style="margin-bottom:14px">${['Arrive ready before the session starts — water bottle full','Head ALWAYS on the safe side in every tackle','Log your session in this app after every gym session','Neck and trap work NEVER skipped on Fridays','Recovery meal within 60 minutes of finishing training','Sleep target: 8–9 hours every night — this is training too'].map(t=>`<div style="display:flex;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--gold);font-weight:700;flex-shrink:0">✓</span>${t}</div>`).join('')}</div>
+    <div class="section-title">Pathways</div>
+    <div class="card">${[['Dolphins NRL','Wide Bay GDO — Danny Blair'],['QRL Wide Bay','Area Manager — Bryce Holdsworth'],['CQ Capras','Community Care Program'],['Dolphins Cup','U15 & U18 schoolboys competition']].map(([o,d])=>`<div style="padding:7px 0;border-bottom:1px solid var(--border)"><div style="font-size:13px;font-weight:600;color:var(--gold)">${o}</div><div style="font-size:11px;color:var(--gray)">${d}</div></div>`).join('')}</div>
+  </div>`;
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// COACH DASHBOARD
+// ════════════════════════════════════════════════════════════════════════════
+function renderCoachDash(){
+  setTimeout(()=>loadCoachDash(),50);
+  return`<div class="page"><div class="coach-badge">⚡ COACH DASHBOARD</div><div style="padding:40px;text-align:center"><div class="spinner"></div></div></div>`;
+}
+
+async function loadCoachDash(){
+  const [studentsR,logsR,wellR,flagsR]=await Promise.all([
+    sb.from('profiles').select('*').eq('role','student').order('name'),
+    sb.from('session_logs').select('student_id,week_number,session_day,avg_rpe,logged_at').order('logged_at',{ascending:false}),
+    sb.from('wellbeing').select('*').order('checked_at',{ascending:false}),
+    sb.from('wellbeing').select('student_id,sleep,energy,mood,soreness,stress').lt('sleep',3).or('energy.lt.3,mood.lt.3,soreness.lt.3,stress.lt.3'),
+  ]);
+  const students=studentsR.data||[];
+  const logs=logsR.data||[];
+  const well=wellR.data||[];
+  const totalSessions=logs.length;
+  const avgRpe=logs.filter(l=>l.avg_rpe).reduce((s,l,i,a)=>s+l.avg_rpe/a.length,0);
+  const thisWeekLogs=logs.filter(l=>new Date(l.logged_at)>new Date(Date.now()-7*24*60*60*1000));
+  const flagStudentIds=new Set((flagsR.data||[]).map(f=>f.student_id));
+
+  // Per-student summary
+  const studentsHtml=students.map(s=>{
+    const sLogs=logs.filter(l=>l.student_id===s.id);
+    const sWell=well.filter(w=>w.student_id===s.id);
+    const lastLog=sLogs[0];
+    const lastDate=lastLog?new Date(lastLog.logged_at).toLocaleDateString('en-AU',{day:'numeric',month:'short'}):'Never';
+    const isFlagged=flagStudentIds.has(s.id);
+    const avgWell=sWell.length>0?(sWell.slice(0,4).reduce((sum,w)=>{const dom=['sleep','energy','mood','soreness','stress'];return sum+dom.reduce((s2,d)=>s2+(w[d]||0),0)/5;},0)/Math.min(sWell.length,4)).toFixed(1):'—';
+    return`<div class="student-card" onclick="openStudentDetail('${s.id}')">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div class="sname">${s.name}${isFlagged?'<span class="flag-dot"></span>':''}</div>
+        <div style="font-size:11px;color:var(--gray)">Last: ${lastDate}</div>
+      </div>
+      <div class="smeta">${s.position} · ${s.year_level}</div>
+      <div class="sstat">
+        <div class="sstat-item"><div class="sstat-num">${sLogs.length}</div><div class="sstat-label">Sessions</div></div>
+        <div class="sstat-item"><div class="sstat-num" style="color:${avgWell!=='—'&&parseFloat(avgWell)<3?'var(--orange)':'var(--gold)'}">${avgWell}</div><div class="sstat-label">Avg Wellbeing</div></div>
+        <div class="sstat-item"><div class="sstat-num" style="color:var(--steel)">${sLogs.filter(l=>l.avg_rpe).length>0?(sLogs.filter(l=>l.avg_rpe).reduce((s,l)=>s+l.avg_rpe,0)/sLogs.filter(l=>l.avg_rpe).length).toFixed(1):'—'}</div><div class="sstat-label">Avg RPE</div></div>
+      </div>
+      <div class="progress-bar" style="margin-top:10px"><div class="fill" style="width:${Math.round(sLogs.length/27*100)}%"></div></div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('content').innerHTML=`<div class="page">
+    <div class="coach-badge">⚡ COACH DASHBOARD</div>
+    <div class="page-header"><h1>Squad Overview</h1><p>All student data in real time. Click a student to see full details.</p></div>
+    <div class="grid-4" style="margin-bottom:20px">
+      <div class="stat-tile"><div class="num">${students.length}</div><div class="label">Students</div></div>
+      <div class="stat-tile" style="border-top-color:var(--green)"><div class="num" style="color:var(--green)">${totalSessions}</div><div class="label">Total Sessions</div></div>
+      <div class="stat-tile" style="border-top-color:var(--steel)"><div class="num" style="color:var(--steel)">${thisWeekLogs.length}</div><div class="label">This Week</div></div>
+      <div class="stat-tile" style="border-top-color:var(--orange)"><div class="num" style="color:var(--orange)">${flagStudentIds.size}</div><div class="label">Wellbeing Flags</div></div>
+    </div>
+    ${flagStudentIds.size>0?`<div class="flag-card" style="margin-bottom:18px"><div class="ft">⚠️ ${flagStudentIds.size} student${flagStudentIds.size>1?'s':''} flagged for low wellbeing</div><p>Students with ● next to their name have scored below threshold. Review their wellbeing check-in and follow up before their next session.</p></div>`:''}
+    <div class="section-title">All Students</div>
+    <div class="grid-2">${studentsHtml}</div>
+  </div>`;
+}
+
+async function openStudentDetail(studentId){
+  document.getElementById('detail-panel').innerHTML=`<div style="padding:40px;text-align:center"><div class="spinner"></div></div>`;
+  document.getElementById('detail-modal').classList.add('open');
+  const [profileR,logsR,wellR,testsR]=await Promise.all([
+    sb.from('profiles').select('*').eq('id',studentId).single(),
+    sb.from('session_logs').select('*').eq('student_id',studentId).order('logged_at',{ascending:false}),
+    sb.from('wellbeing').select('*').eq('student_id',studentId).order('week_number',{ascending:false}),
+    sb.from('testing').select('*').eq('student_id',studentId),
+  ]);
+  const p=profileR.data;
+  const logs=logsR.data||[];
+  const well=wellR.data||[];
+  const tests=testsR.data||[];
+  const logsHtml=logs.length?logs.map(l=>`<div class="log-entry">
+    <div style="display:flex;justify-content:space-between">
+      <div class="le-title">Week ${l.week_number} — ${{mon:'Monday S&C',wed:'Wednesday S&C',fri:'Friday S&C'}[l.session_day]||l.session_day}</div>
+      ${l.avg_rpe?`<div class="srpe">RPE ${l.avg_rpe}</div>`:''}
+    </div>
+    <div class="le-meta">${new Date(l.logged_at).toLocaleDateString('en-AU',{weekday:'short',day:'numeric',month:'short',year:'numeric'})}${l.notes?` · "${l.notes}"`:''}
+    </div>
+  </div>`).join(''):`<div class="empty-state"><div class="ei">📋</div><p>No sessions logged yet</p></div>`;
+  const wellHtml=well.length?well.map(w=>{const avg=(['sleep','energy','mood','soreness','stress'].reduce((s,d)=>s+(w[d]||0),0)/5).toFixed(1);const low=['sleep','energy','mood','soreness','stress'].filter(d=>(w[d]||0)<=2&&(w[d]||0)>0);return`<div style="padding:8px 0;border-bottom:1px solid var(--border)"><div style="display:flex;justify-content:space-between"><span style="font-size:13px">Week ${w.week_number}</span><span style="font-size:12px;font-weight:700;color:${parseFloat(avg)<3?'var(--orange)':'var(--green)'}">${avg}/5 avg${low.length?' ⚠️ '+low.join(', low':''}</span></div></div>`;}).join(''):`<p style="font-size:13px;color:var(--gray)">No check-ins yet</p>`;
+  const testHtml=tests.length?tests.map(t=>`<div style="padding:7px 0;border-bottom:1px solid var(--border)"><div style="font-size:13px;font-weight:600;color:var(--gold);margin-bottom:3px">${t.period.toUpperCase()}</div>${TESTS_DEF.map(d=>t[d.id]?`<span style="font-size:11px;color:var(--gray);margin-right:10px">${d.name}: <strong style="color:var(--white)">${t[d.id]}${d.unit}</strong></span>`:'').join('')}</div>`).join(''):`<p style="font-size:13px;color:var(--gray)">No test results yet</p>`;
+
+  document.getElementById('detail-panel').innerHTML=`
+    <div class="detail-close" onclick="closeDetail()">✕</div>
+    <div style="margin-bottom:18px">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:26px;margin-bottom:2px">${p.name}</div>
+      <div style="font-size:13px;color:var(--gray)">${p.position} · ${p.year_level}</div>
+    </div>
+    <div class="grid-3" style="margin-bottom:18px">
+      <div class="stat-tile"><div class="num">${logs.length}</div><div class="label">Sessions</div></div>
+      <div class="stat-tile" style="border-top-color:var(--steel)"><div class="num" style="color:var(--steel)">${logs.filter(l=>l.avg_rpe).length>0?(logs.filter(l=>l.avg_rpe).reduce((s,l)=>s+l.avg_rpe,0)/logs.filter(l=>l.avg_rpe).length).toFixed(1):'—'}</div><div class="label">Avg RPE</div></div>
+      <div class="stat-tile" style="border-top-color:var(--green)"><div class="num" style="color:var(--green)">${Math.round(logs.length/27*100)}%</div><div class="label">Progress</div></div>
+    </div>
+    <div class="section-title">Session Log</div>
+    <div style="max-height:260px;overflow-y:auto;margin-bottom:16px">${logsHtml}</div>
+    <div class="section-title">Wellbeing History</div>
+    <div style="margin-bottom:16px">${wellHtml}</div>
+    <div class="section-title">Testing Results</div>
+    <div>${testHtml}</div>
+  `;
+}
+function closeDetail(){document.getElementById('detail-modal').classList.remove('open');}
+document.getElementById('detail-modal').addEventListener('click',e=>{if(e.target===document.getElementById('detail-modal'))closeDetail();});
+
+async function renderAllStudents(){
+  const c=document.getElementById('content');
+  c.innerHTML=`<div class="page"><div class="coach-badge">⚡ COACH</div><div class="page-header"><h1>All Students</h1></div><div style="padding:40px;text-align:center"><div class="spinner"></div></div></div>`;
+  const {data:students}=await sb.from('profiles').select('*').eq('role','student').order('name');
+  const {data:logs}=await sb.from('session_logs').select('student_id,logged_at').order('logged_at',{ascending:false});
+  const lastLogMap={};(logs||[]).forEach(l=>{if(!lastLogMap[l.student_id])lastLogMap[l.student_id]=l.logged_at;});
+  const countMap={};(logs||[]).forEach(l=>countMap[l.student_id]=(countMap[l.student_id]||0)+1);
+  const rows=(students||[]).map(s=>`<tr style="border-bottom:1px solid var(--border)">
+    <td style="padding:10px 12px;font-weight:600">${s.name}</td>
+    <td style="padding:10px 12px;color:var(--gray)">${s.position}</td>
+    <td style="padding:10px 12px;color:var(--gray)">${s.year_level}</td>
+    <td style="padding:10px 12px;text-align:center"><span style="color:var(--gold);font-weight:700">${countMap[s.id]||0}</span></td>
+    <td style="padding:10px 12px;color:var(--gray);font-size:12px">${lastLogMap[s.id]?new Date(lastLogMap[s.id]).toLocaleDateString('en-AU',{day:'numeric',month:'short'}):'Never'}</td>
+    <td style="padding:10px 12px"><button class="btn btn-ghost btn-sm" onclick="openStudentDetail('${s.id}')">View</button></td>
+  </tr>`).join('');
+  document.getElementById('content').innerHTML=`<div class="page">
+    <div class="coach-badge">⚡ COACH</div>
+    <div class="page-header"><h1>All Students</h1><p>${(students||[]).length} registered students</p></div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <table style="width:100%;border-collapse:collapse">
+        <thead><tr style="background:rgba(255,255,255,0.04)">${['Name','Position','Year','Sessions','Last Login',''].map(h=>`<th style="padding:10px 12px;text-align:left;font-size:10px;letter-spacing:1.5px;color:var(--gray);font-weight:700;text-transform:uppercase">${h}</th>`).join('')}</tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+async function renderFlags(){
+  const c=document.getElementById('content');
+  c.innerHTML=`<div class="page"><div class="coach-badge">🚨 WELLBEING FLAGS</div><div class="page-header"><h1>Wellbeing Flags</h1></div><div style="padding:40px;text-align:center"><div class="spinner"></div></div></div>`;
+  const {data:well}=await sb.from('wellbeing').select('*,profiles(name,position,year_level)').order('checked_at',{ascending:false});
+  const flagged=(well||[]).filter(w=>{const low=['sleep','energy','mood','soreness','stress'].filter(d=>(w[d]||0)>0&&(w[d]||0)<=2);return low.length>=2;});
+  const flagHtml=flagged.length?flagged.map(w=>{const low=['sleep','energy','mood','soreness','stress'].filter(d=>(w[d]||0)>0&&(w[d]||0)<=2);const name=w.profiles?.name||'Unknown';return`<div style="background:rgba(192,80,32,0.1);border:1px solid rgba(192,80,32,0.25);border-left:4px solid var(--orange);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:17px">${name} <span style="font-size:12px;color:var(--gray);font-family:'Barlow',sans-serif;font-weight:400">· Week ${w.week_number}</span></div>
+        <div style="font-size:11px;color:var(--gray)">${new Date(w.checked_at).toLocaleDateString('en-AU',{day:'numeric',month:'short'})}</div>
+      </div>
+      <div style="font-size:13px;color:var(--orange);font-weight:600">Low scores: ${low.join(', ')}</div>
+      <div style="font-size:12px;color:var(--gray);margin-top:4px">${['sleep','energy','mood','soreness','stress'].map(d=>`${d}: ${w[d]||'—'}`).join(' · ')}</div>
+    </div>`;}).join(''):`<div class="empty-state"><div class="ei">✅</div><p>No wellbeing flags this week.<br>All students are tracking well.</p></div>`;
+  document.getElementById('content').innerHTML=`<div class="page">
+    <div class="coach-badge">🚨 WELLBEING FLAGS</div>
+    <div class="page-header"><h1>Wellbeing Flags</h1><p>Students scoring ≤2 on 2+ domains. Follow up before their next session.</p></div>
+    ${flagged.length?`<div class="flag-card" style="margin-bottom:16px"><div class="ft">${flagged.length} flagged check-in${flagged.length>1?'s':''} require follow-up</div><p>Contact these students directly or speak with them before training.</p></div>`:''}
+    ${flagHtml}
+  </div>`;
+}
+
+async function renderCoachLogs(){
+  const c=document.getElementById('content');
+  c.innerHTML=`<div class="page"><div class="coach-badge">📅 SESSION LOGS</div><div class="page-header"><h1>Session Logs</h1></div><div style="padding:40px;text-align:center"><div class="spinner"></div></div></div>`;
+  const {data:logs}=await sb.from('session_logs').select('*,profiles(name,position)').order('logged_at',{ascending:false}).limit(100);
+  const rows=(logs||[]).map(l=>{const sessLabel={mon:'Mon S&C',wed:'Wed S&C',fri:'Fri S&C'}[l.session_day]||l.session_day;return`<tr style="border-bottom:1px solid var(--border)">
+    <td style="padding:9px 12px;font-weight:600">${l.profiles?.name||'—'}</td>
+    <td style="padding:9px 12px;color:var(--gray)">${l.profiles?.position||'—'}</td>
+    <td style="padding:9px 12px">Wk ${l.week_number} — ${sessLabel}</td>
+    <td style="padding:9px 12px;text-align:center">${l.avg_rpe?`<span class="srpe">RPE ${l.avg_rpe}</span>`:'—'}</td>
+    <td style="padding:9px 12px;color:var(--gray);font-size:12px">${new Date(l.logged_at).toLocaleDateString('en-AU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</td>
+    <td style="padding:9px 12px;font-size:12px;color:var(--gray);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.notes||''}</td>
+  </tr>`;}).join('');
+  document.getElementById('content').innerHTML=`<div class="page">
+    <div class="coach-badge">📅 SESSION LOGS</div>
+    <div class="page-header"><h1>All Session Logs</h1><p>Last 100 sessions logged by students</p></div>
+    <div class="card" style="padding:0;overflow:hidden;overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;min-width:600px">
+        <thead><tr style="background:rgba(255,255,255,0.04)">${['Student','Position','Session','RPE','Date','Notes'].map(h=>`<th style="padding:9px 12px;text-align:left;font-size:10px;letter-spacing:1.5px;color:var(--gray);font-weight:700;text-transform:uppercase">${h}</th>`).join('')}</tr></thead>
+        <tbody>${rows||'<tr><td colspan="6" style="padding:40px;text-align:center;color:var(--gray)">No sessions logged yet</td></tr>'}</tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+async function renderCoachTesting(){
+  const c=document.getElementById('content');
+  c.innerHTML=`<div class="page"><div class="coach-badge">⚡ TESTING</div><div class="page-header"><h1>Testing Results</h1></div><div style="padding:40px;text-align:center"><div class="spinner"></div></div></div>`;
+  const {data:tests}=await sb.from('testing').select('*,profiles(name,position,year_level)').order('tested_at',{ascending:false});
+  const rows=(tests||[]).map(t=>`<tr style="border-bottom:1px solid var(--border)">
+    <td style="padding:9px 12px;font-weight:600">${t.profiles?.name||'—'}</td>
+    <td style="padding:9px 12px;color:var(--gray)">${t.profiles?.position||'—'}</td>
+    <td style="padding:9px 12px"><span class="badge ${t.period==='end'?'bg':t.period==='mid'?'bk':'bb'}">${t.period.toUpperCase()}</span></td>
+    ${TESTS_DEF.map(d=>`<td style="padding:9px 12px;text-align:center;font-size:13px">${t[d.id]||'—'}</td>`).join('')}
+  </tr>`).join('');
+  document.getElementById('content').innerHTML=`<div class="page">
+    <div class="coach-badge">⚡ TESTING</div>
+    <div class="page-header"><h1>Testing Results</h1><p>All student testing data</p></div>
+    <div class="card" style="padding:0;overflow:hidden;overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse">
+        <thead><tr style="background:rgba(255,255,255,0.04)">${['Student','Pos','Period',...TESTS_DEF.map(d=>d.name)].map(h=>`<th style="padding:8px 10px;text-align:center;font-size:9px;letter-spacing:1px;color:var(--gray);font-weight:700;text-transform:uppercase;white-space:nowrap">${h}</th>`).join('')}</tr></thead>
+        <tbody>${rows||'<tr><td colspan="12" style="padding:40px;text-align:center;color:var(--gray)">No test results yet</td></tr>'}</tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+// ── Utils ─────────────────────────────────────────────────────────────────────
+function toast(msg,error=false){const t=document.getElementById('toast');t.textContent=(error?'✕ ':'✓ ')+msg;t.className='toast show'+(error?' error':'');setTimeout(()=>t.classList.remove('show'),3000);}
+function setLoading(id,on){const b=document.getElementById(id);if(!b)return;b.disabled=on;b.innerHTML=on?`<span class="spinner"></span> Please wait...`:b.dataset.orig||(b.dataset.orig=b.innerHTML);}
+function toggleMenu(){document.getElementById('mob-menu').classList.toggle('open');}
+function closeMenuOutside(e){if(!e.target.closest('.mobile-menu-panel'))document.getElementById('mob-menu').classList.remove('open');}
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('li-pin').addEventListener('keyup',e=>{if(e.key==='Enter')doLogin();});
+  document.getElementById('li-name').addEventListener('keyup',e=>{if(e.key==='Enter')document.getElementById('li-pin').focus();});
+});
+</script>
+</body>
+</html>

@@ -573,12 +573,44 @@ async function doLogin(){
 async function doCoachLogin(){
   const name=document.getElementById('co-name').value.trim();
   const pin=document.getElementById('co-pin').value.trim();
-  if(!name||!pin){toast('Enter name and PIN',true);return;}
-  setLoading('btn-coach',true);
-  const {data,error}=await sb.from('profiles').select('*').ilike('name',name).eq('pin',pin).eq('role','coach').single();
-  setLoading('btn-coach',false);
-  if(error||!data){toast('Coach credentials not found',true);return;}
-  CU=data; loadApp();
+  if(!name){toast('Enter your coach name',true);return;}
+  if(!pin){toast('Enter your PIN',true);return;}
+  const btn=document.getElementById('btn-coach');
+  btn.disabled=true;
+  btn.innerHTML='<span class="spinner"></span> Signing in...';
+  try {
+    // First check the name exists at all
+    const {data:nameCheck}=await sb.from('profiles').select('id,name,role,pin').ilike('name',name);
+    console.log('Name check results:', nameCheck);
+    if(!nameCheck||nameCheck.length===0){
+      btn.disabled=false; btn.innerHTML='COACH SIGN IN';
+      toast('Name not found. Check spelling exactly matches what was entered in the database.',true);
+      return;
+    }
+    // Check role
+    const coachRows=nameCheck.filter(r=>r.role==='coach');
+    if(coachRows.length===0){
+      btn.disabled=false; btn.innerHTML='COACH SIGN IN';
+      toast('Account found but role is not coach. Check the database.',true);
+      return;
+    }
+    // Check pin
+    const match=coachRows.find(r=>r.pin===pin);
+    if(!match){
+      btn.disabled=false; btn.innerHTML='COACH SIGN IN';
+      toast('PIN incorrect. Try again.',true);
+      return;
+    }
+    // Full profile fetch
+    const {data,error}=await sb.from('profiles').select('*').eq('id',match.id).single();
+    btn.disabled=false; btn.innerHTML='COACH SIGN IN';
+    if(error||!data){toast('Error loading profile: '+(error?.message||'unknown'),true);return;}
+    CU=data; loadApp();
+  } catch(e) {
+    btn.disabled=false; btn.innerHTML='COACH SIGN IN';
+    toast('Connection error: '+e.message,true);
+    console.error('Coach login error:',e);
+  }
 }
 
 function loadApp(){
@@ -1130,7 +1162,7 @@ async function renderCoachTesting(){
 
 // ── Utils ─────────────────────────────────────────────────────────────────────
 function toast(msg,error=false){const t=document.getElementById('toast');t.textContent=(error?'✕ ':'✓ ')+msg;t.className='toast show'+(error?' error':'');setTimeout(()=>t.classList.remove('show'),3000);}
-function setLoading(id,on){const b=document.getElementById(id);if(!b)return;b.disabled=on;b.innerHTML=on?`<span class="spinner"></span> Please wait...`:b.dataset.orig||(b.dataset.orig=b.innerHTML);}
+function setLoading(id,on){const b=document.getElementById(id);if(!b)return;if(on&&!b.dataset.orig)b.dataset.orig=b.innerHTML;b.disabled=on;b.innerHTML=on?`<span class="spinner"></span> Please wait...`:b.dataset.orig;}
 function toggleMenu(){document.getElementById('mob-menu').classList.toggle('open');}
 function closeMenuOutside(e){if(!e.target.closest('.mobile-menu-panel'))document.getElementById('mob-menu').classList.remove('open');}
 

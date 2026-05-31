@@ -261,7 +261,7 @@ body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--white);m
     </div>
 
     <div style="text-align:center;margin-top:16px">
-      <button onclick="showCard('card-coach')" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:10px 24px;color:var(--white);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;letter-spacing:1.5px;cursor:pointer;width:100%;">🏫  COACH LOGIN</button>
+      <button onclick="document.querySelectorAll('.login-card').forEach(c=>c.style.display='none');document.getElementById('card-coach').style.display='block';" style="background:rgba(27,79,138,0.3);border:2px solid rgba(27,79,138,0.6);border-radius:8px;padding:12px 24px;color:#60a5fa;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;letter-spacing:1.5px;cursor:pointer;width:100%;">🏫  COACH LOGIN</button>
     </div>
   </div>
 </div>
@@ -541,7 +541,7 @@ const DOMAINS=[{id:'sleep',label:'Sleep',icon:'😴'},{id:'energy',label:'Energy
 const TESTS_DEF=[{id:'sprint_5m',name:'5m Sprint',unit:'sec',low:true,target:'<1.05'},{id:'sprint_10m',name:'10m Sprint',unit:'sec',low:true,target:'<1.85'},{id:'sprint_40m',name:'40m Sprint',unit:'sec',low:true,target:'<5.6'},{id:'cod_505',name:'5-0-5 COD',unit:'sec',low:true,target:'<2.45'},{id:'cmj',name:'CMJ Height',unit:'cm',low:false,target:'>50cm'},{id:'broad_jump',name:'Broad Jump',unit:'cm',low:false,target:'>220cm'},{id:'squat_1rm',name:'Back Squat 1RM',unit:'kg',low:false,target:'>1.5× BW'},{id:'bench_1rm',name:'Bench Press 1RM',unit:'kg',low:false,target:'>1.0× BW'},{id:'yoyo_level',name:'Yo-Yo Level',unit:'lvl',low:false,target:'Lvl 17-19'}];
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
-function showCard(id){document.querySelectorAll('.login-card').forEach(c=>c.style.display='none');document.getElementById(id).style.display='block';}
+function showCard(id){try{document.querySelectorAll('.login-card').forEach(c=>c.style.display='none');var el=document.getElementById(id);if(el)el.style.display='block';else console.error('Card not found:',id);}catch(e){console.error('showCard error:',e);}}
 
 async function doRegister(){
   const name=document.getElementById('rg-name').value.trim();

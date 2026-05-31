@@ -573,43 +573,55 @@ async function doLogin(){
 async function doCoachLogin(){
   const name=document.getElementById('co-name').value.trim();
   const pin=document.getElementById('co-pin').value.trim();
-  if(!name){toast('Enter your coach name',true);return;}
-  if(!pin){toast('Enter your PIN',true);return;}
   const btn=document.getElementById('btn-coach');
+  const showMsg=msg=>{
+    let el=document.getElementById('coach-msg');
+    if(!el){el=document.createElement('div');el.id='coach-msg';el.style.cssText='margin-top:10px;padding:10px 12px;border-radius:8px;font-size:13px;font-weight:600;text-align:center;';document.getElementById('card-coach').appendChild(el);}
+    el.textContent=msg;
+    el.style.background='rgba(192,80,32,0.2)';
+    el.style.color='#fb923c';
+    el.style.border='1px solid rgba(192,80,32,0.4)';
+  };
+  const showOk=msg=>{
+    let el=document.getElementById('coach-msg');
+    if(!el){el=document.createElement('div');el.id='coach-msg';el.style.cssText='margin-top:10px;padding:10px 12px;border-radius:8px;font-size:13px;font-weight:600;text-align:center;';document.getElementById('card-coach').appendChild(el);}
+    el.textContent=msg;
+    el.style.background='rgba(26,122,66,0.2)';
+    el.style.color='#4ade80';
+    el.style.border='1px solid rgba(26,122,66,0.4)';
+  };
+  if(!name){showMsg('Please enter your name');return;}
+  if(!pin){showMsg('Please enter your PIN');return;}
   btn.disabled=true;
-  btn.innerHTML='<span class="spinner"></span> Signing in...';
+  btn.innerHTML='<span class="spinner"></span> Checking...';
+  showOk('Connecting to database...');
   try {
-    // First check the name exists at all
-    const {data:nameCheck}=await sb.from('profiles').select('id,name,role,pin').ilike('name',name);
-    console.log('Name check results:', nameCheck);
-    if(!nameCheck||nameCheck.length===0){
+    showOk('Looking up: "'+name+'"...');
+    const {data:rows, error:err1}=await sb.from('profiles').select('*').ilike('name',name);
+    if(err1){
       btn.disabled=false; btn.innerHTML='COACH SIGN IN';
-      toast('Name not found. Check spelling exactly matches what was entered in the database.',true);
+      showMsg('Database error: '+err1.message);
       return;
     }
-    // Check role
-    const coachRows=nameCheck.filter(r=>r.role==='coach');
-    if(coachRows.length===0){
+    if(!rows||rows.length===0){
       btn.disabled=false; btn.innerHTML='COACH SIGN IN';
-      toast('Account found but role is not coach. Check the database.',true);
+      showMsg('Name "'+name+'" not found in database. Check exact spelling.');
       return;
     }
-    // Check pin
-    const match=coachRows.find(r=>r.pin===pin);
+    showOk('Found '+rows.length+' account(s). Checking PIN...');
+    const match=rows.find(r=>r.pin===pin&&r.role==='coach');
     if(!match){
       btn.disabled=false; btn.innerHTML='COACH SIGN IN';
-      toast('PIN incorrect. Try again.',true);
+      const roles=rows.map(r=>r.role).join(', ');
+      showMsg('PIN incorrect or not a coach account. Roles found: '+roles);
       return;
     }
-    // Full profile fetch
-    const {data,error}=await sb.from('profiles').select('*').eq('id',match.id).single();
+    showOk('Logged in! Loading dashboard...');
+    CU=match;
+    setTimeout(()=>{btn.disabled=false;btn.innerHTML='COACH SIGN IN';loadApp();},800);
+  } catch(e){
     btn.disabled=false; btn.innerHTML='COACH SIGN IN';
-    if(error||!data){toast('Error loading profile: '+(error?.message||'unknown'),true);return;}
-    CU=data; loadApp();
-  } catch(e) {
-    btn.disabled=false; btn.innerHTML='COACH SIGN IN';
-    toast('Connection error: '+e.message,true);
-    console.error('Coach login error:',e);
+    showMsg('Error: '+e.message);
   }
 }
 
@@ -1041,7 +1053,7 @@ async function openStudentDetail(studentId){
     <div class="le-meta">${new Date(l.logged_at).toLocaleDateString('en-AU',{weekday:'short',day:'numeric',month:'short',year:'numeric'})}${l.notes?` · "${l.notes}"`:''}
     </div>
   </div>`).join(''):`<div class="empty-state"><div class="ei">📋</div><p>No sessions logged yet</p></div>`;
-  const wellHtml=well.length?well.map(w=>{const avg=(['sleep','energy','mood','soreness','stress'].reduce((s,d)=>s+(w[d]||0),0)/5).toFixed(1);const low=['sleep','energy','mood','soreness','stress'].filter(d=>(w[d]||0)<=2&&(w[d]||0)>0);return`<div style="padding:8px 0;border-bottom:1px solid var(--border)"><div style="display:flex;justify-content:space-between"><span style="font-size:13px">Week ${w.week_number}</span><span style="font-size:12px;font-weight:700;color:${parseFloat(avg)<3?'var(--orange)':'var(--green)'}">${avg}/5 avg${low.length?' ⚠️ '+low.join(', low':''}</span></div></div>`;}).join(''):`<p style="font-size:13px;color:var(--gray)">No check-ins yet</p>`;
+  const wellHtml=well.length?well.map(w=>{const avg=(['sleep','energy','mood','soreness','stress'].reduce((s,d)=>s+(w[d]||0),0)/5).toFixed(1);const low=['sleep','energy','mood','soreness','stress'].filter(d=>(w[d]||0)<=2&&(w[d]||0)>0);return`<div style="padding:8px 0;border-bottom:1px solid var(--border)"><div style="display:flex;justify-content:space-between"><span style="font-size:13px">Week ${w.week_number}</span><span style="font-size:12px;font-weight:700;color:${parseFloat(avg)<3?'var(--orange)':'var(--green)'}">${avg}/5 avg${low.length?' ⚠️ '+low.join(', '):''}</span></div></div>`;}).join(''):`<p style="font-size:13px;color:var(--gray)">No check-ins yet</p>`;
   const testHtml=tests.length?tests.map(t=>`<div style="padding:7px 0;border-bottom:1px solid var(--border)"><div style="font-size:13px;font-weight:600;color:var(--gold);margin-bottom:3px">${t.period.toUpperCase()}</div>${TESTS_DEF.map(d=>t[d.id]?`<span style="font-size:11px;color:var(--gray);margin-right:10px">${d.name}: <strong style="color:var(--white)">${t[d.id]}${d.unit}</strong></span>`:'').join('')}</div>`).join(''):`<p style="font-size:13px;color:var(--gray)">No test results yet</p>`;
 
   document.getElementById('detail-panel').innerHTML=`
